@@ -1,6 +1,7 @@
 import { City } from './city';
 import { THEMES, themeById, type Theme } from './themes';
 import { fetchContributions, computeStats, demoContributions, ContributionError, type Contributions } from './data';
+import { Leaderboard } from './leaderboard';
 import './style.css';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -16,6 +17,8 @@ const msgEl = $<HTMLParagraphElement>('msg');
 const tooltip = $<HTMLDivElement>('tooltip');
 const toastEl = $<HTMLDivElement>('toast');
 const hint = $<HTMLDivElement>('hint');
+const boardEl = $<HTMLElement>('board');
+const boardBtn = $<HTMLButtonElement>('a-board');
 
 const params = new URLSearchParams(location.search);
 let theme: Theme = themeById(params.get('theme'));
@@ -24,6 +27,22 @@ let loading = false;
 
 const city = new City(canvas, theme);
 city.start();
+
+// The board ranks people by contribution volume and doubles as a way to jump
+// between cities. It costs one request per person, so nothing is fetched until
+// the panel is actually opened.
+const board = new Leaderboard(boardEl, {
+  onPick: (user, range) => {
+    ensureRangeOption(range);
+    rangeSel.value = range;
+    userInput.value = user;
+    load(user, range);
+  },
+  onChange: () => {
+    board.persist();
+    syncURL();
+  },
+});
 
 // ------------------------------------------------------------------ chrome
 
@@ -68,6 +87,19 @@ function buildRangeOptions(selected: string) {
   rangeSel.value = opts.some(([v]) => v === selected) ? selected : 'last';
 }
 
+/**
+ * The range picker only lists the last ten years, but a leaderboard pick can
+ * point at any year the API knows about. Add the missing year rather than
+ * silently snapping the selection back to the rolling window.
+ */
+function ensureRangeOption(range: string) {
+  if ([...rangeSel.options].some((o) => o.value === range)) return;
+  const o = document.createElement('option');
+  o.value = range;
+  o.textContent = range;
+  rangeSel.appendChild(o);
+}
+
 let toastTimer: number | undefined;
 function toast(text: string) {
   toastEl.textContent = text;
@@ -96,6 +128,11 @@ function syncURL() {
   if (current.user !== 'demo') p.set('user', current.user);
   p.set('range', current.range);
   p.set('theme', theme.id);
+  // The board only travels in a link once it is actually on screen.
+  if (board.visible && board.users.length) {
+    p.set('users', board.users.join(','));
+    p.set('period', board.period);
+  }
   history.replaceState(null, '', p.toString() ? `?${p}` : location.pathname);
 }
 
@@ -123,6 +160,7 @@ async function load(user: string, range: string) {
     current = data;
     city.build(data.days);
     renderStats(data);
+    board.setActive(data.user);
     document.title = `${data.user} · gitcity`;
     message(null);
     syncURL();
@@ -189,6 +227,20 @@ $<HTMLButtonElement>('a-share').addEventListener('click', async () => {
 
 $<HTMLButtonElement>('a-reset').addEventListener('click', () => city.resetView());
 
+let boardSeeded = false;
+function showBoard(show: boolean) {
+  board.toggle(show);
+  boardBtn.setAttribute('aria-pressed', String(show));
+  if (show && !boardSeeded) {
+    boardSeeded = true;
+    board.load(seedUsers);
+    if (current) board.setActive(current.user);
+  }
+  syncURL();
+}
+
+boardBtn.addEventListener('click', () => showBoard(!board.visible));
+
 form.addEventListener('submit', (e) => {
   e.preventDefault();
   const v = userInput.value.trim();
@@ -229,6 +281,17 @@ setAccent(theme);
 const startUser = params.get('user');
 const startRange = params.get('range') ?? 'last';
 buildRangeOptions(startRange);
+if (/^\d{4}$/.test(startRange)) {
+  ensureRangeOption(startRange);
+  rangeSel.value = startRange;
+}
+
+const usersParam = params.get('users');
+const seedUsers = Leaderboard.restore(usersParam);
+const startPeriod = params.get('period');
+if (startPeriod && (startPeriod === 'all' || startPeriod === 'last' || /^\d{4}$/.test(startPeriod))) {
+  board.setPeriod(startPeriod);
+}
 
 if (startUser) {
   userInput.value = startUser;
@@ -237,3 +300,6 @@ if (startUser) {
   loadDemo();
   message('Enter a GitHub username to build a city.', 'info');
 }
+
+// A shared link that carries a board should land with the board already open.
+if (usersParam) showBoard(true);

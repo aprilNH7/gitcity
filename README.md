@@ -16,10 +16,21 @@ GitHub's own Skyline was the fun way to look back at a year of work, and it is g
 - **Reads exactly like your graph.** Colour follows GitHub's own 0 to 4 intensity levels, so the city and the contribution graph always agree.
 - **Log scaled heights.** One 100 commit day does not flatten the rest of the year into the pavement.
 - **Hover any building** to see the date and exact count.
+- **Leaderboard.** Rank up to twelve people by contribution volume across all time, the rolling last twelve months, or any single year. Click a row to build that person's city.
 - **Five themes.** Neon, Aurora, Sunset, Matrix, Ice.
 - **Save a PNG** of the current camera angle.
 - **Export an STL** and print your year. Buildings sit on a base plate, ready to slice.
-- **Shareable links.** `?user=torvalds&range=2024&theme=sunset` restores the exact view.
+- **Shareable links.** `?user=torvalds&range=2024&theme=sunset` restores the exact view, and `?users=a,b,c&period=all` restores a board.
+
+## Leaderboard
+
+Put a group side by side and rank them by contribution volume, across all time, the rolling last twelve months, or any single year. Click a row to build that person's city.
+
+![The leaderboard ranking six accounts by all time contributions](docs/shot-board.png)
+
+**[Open this board](https://aprilnh7.github.io/gitcity/?user=torvalds&range=2024&users=torvalds,sindresorhus,gaearon,yyx990803,kentcdodds,tj&period=all)**
+
+Your board is remembered locally and travels in the URL, so a link carries the whole comparison.
 
 ## Themes
 
@@ -40,6 +51,8 @@ The whole city is a single `InstancedMesh`, one instance per day, so a full year
 The reflection is a second `InstancedMesh` sharing the same matrices with `scale.y = -1`, sitting under a semi transparent plaza. Cheaper than a real reflection pass and it survives bloom, which a `Reflector` does not.
 
 Camera framing projects all eight corners of the city's bounding box into camera space and solves for the distance that keeps every corner inside the frustum. That is what keeps the full year in frame on both an ultrawide monitor and a portrait phone.
+
+The leaderboard costs exactly one request per person no matter how many periods you compare. The all time payload carries a per year total map alongside the day array, so switching between all time, the last twelve months, and individual years is a local re-sort with no network traffic.
 
 ## Data
 

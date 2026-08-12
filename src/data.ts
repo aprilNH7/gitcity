@@ -22,6 +22,8 @@ export interface Stats {
 
 const API = 'https://github-contributions-api.jogruber.de/v4';
 
+export const USERNAME_RE = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/;
+
 export class ContributionError extends Error {
   constructor(message: string, readonly kind: 'notfound' | 'network' | 'empty') {
     super(message);
@@ -29,14 +31,14 @@ export class ContributionError extends Error {
   }
 }
 
-/**
- * The upstream API returns every day of the requested range, already bucketed
- * into GitHub's 0-4 intensity levels. We normalise it and nothing else, so a
- * city always maps 1:1 to what the profile graph shows.
- */
-export async function fetchContributions(user: string, range: string): Promise<Contributions> {
+interface ApiPayload {
+  total?: Record<string, number>;
+  contributions?: Day[];
+}
+
+async function request(user: string, range: string): Promise<{ clean: string; json: ApiPayload }> {
   const clean = user.trim().replace(/^@/, '');
-  if (!/^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(clean)) {
+  if (!USERNAME_RE.test(clean)) {
     throw new ContributionError(`"${user}" is not a valid GitHub username.`, 'notfound');
   }
 
@@ -54,10 +56,16 @@ export async function fetchContributions(user: string, range: string): Promise<C
     throw new ContributionError(`Contributions API returned ${res.status}.`, 'network');
   }
 
-  const json = (await res.json()) as {
-    total?: Record<string, number>;
-    contributions?: Day[];
-  };
+  return { clean, json: (await res.json()) as ApiPayload };
+}
+
+/**
+ * The upstream API returns every day of the requested range, already bucketed
+ * into GitHub's 0-4 intensity levels. We normalise it and nothing else, so a
+ * city always maps 1:1 to what the profile graph shows.
+ */
+export async function fetchContributions(user: string, range: string): Promise<Contributions> {
+  const { clean, json } = await request(user, range);
 
   const days = json.contributions ?? [];
   if (!days.length) {
@@ -68,6 +76,57 @@ export async function fetchContributions(user: string, range: string): Promise<C
   const total = totals[range] ?? Object.values(totals)[0] ?? days.reduce((a, d) => a + d.count, 0);
 
   return { user: clean, range, total, days };
+}
+
+/**
+ * One request per user covering every year GitHub has data for. The payload
+ * carries a per-year total map, which is what makes an all-time leaderboard
+ * possible without hammering the API once per year per person.
+ *
+ * Note the upstream ordering: years come back newest first, days ascending
+ * within each year. We re-sort so callers can rely on a single ascending run.
+ */
+export async function fetchAllTime(user: string): Promise<Contributions & { totals: Record<string, number> }> {
+  const { clean, json } = await request(user, 'all');
+
+  const days = (json.contributions ?? []).slice().sort((a, b) => a.date.localeCompare(b.date));
+  if (!days.length) {
+    throw new ContributionError(`No contribution data for ${clean}.`, 'empty');
+  }
+
+  const totals = json.total ?? {};
+  const total = Object.values(totals).reduce((a, b) => a + b, 0);
+
+  return { user: clean, range: 'all', total, days, totals };
+}
+
+/** Inclusive lower bound for a rolling twelve month window, as YYYY-MM-DD. */
+export function rollingWindowStart(from = new Date()): string {
+  const d = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()));
+  d.setUTCFullYear(d.getUTCFullYear() - 1);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Days belonging to a period id: 'all', 'last' for the rolling year, or a
+ * four digit year. Future dated days inside the current calendar year come
+ * back from the API with a zero count, so they are harmless to include.
+ */
+export function daysForPeriod(days: Day[], period: string): Day[] {
+  if (period === 'all') return days;
+  if (period === 'last') {
+    const start = rollingWindowStart();
+    const today = new Date().toISOString().slice(0, 10);
+    return days.filter((d) => d.date >= start && d.date <= today);
+  }
+  return days.filter((d) => d.date.startsWith(period + '-'));
+}
+
+export function totalForPeriod(entry: { totals: Record<string, number>; days: Day[] }, period: string): number {
+  if (period === 'all') return Object.values(entry.totals).reduce((a, b) => a + b, 0);
+  if (period === 'last') return daysForPeriod(entry.days, 'last').reduce((a, d) => a + d.count, 0);
+  return entry.totals[period] ?? 0;
 }
 
 export function computeStats(days: Day[]): Stats {
