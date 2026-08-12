@@ -10,6 +10,10 @@ import type { Day } from './data';
 import type { Theme } from './themes';
 
 const CELL = 1;
+const ROWS = 7;
+// Empty cells between two districts in compare mode. Wide enough that the two
+// skylines never overlap on screen, tight enough that both still fill the frame.
+const GAP = 14;
 const FOOTPRINT = 0.78;
 const MIN_HEIGHT = 0.18;
 const MAX_HEIGHT = 11;
@@ -20,12 +24,31 @@ export interface HoverInfo {
   count: number;
   x: number;
   y: number;
+  /** Which district the building belongs to. Empty for a single city. */
+  label: string;
+}
+
+/** A screen space anchor for a district caption, in CSS pixels. */
+export interface LabelPos {
+  label: string;
+  total: number;
+  x: number;
+  y: number;
+  visible: boolean;
+}
+
+export interface District {
+  label: string;
+  days: Day[];
 }
 
 interface Building {
   col: number;
   row: number;
+  zone: number;
   height: number;
+  /** Colour bucket. GitHub's own level for a single city, a shared bucket when comparing. */
+  shade: number;
   delay: number;
   day: Day;
 }
@@ -56,6 +79,10 @@ export class City {
 
   private buildings: Building[] = [];
   private cols = 53;
+  private zones: District[] = [];
+  private zoneMeta: Array<{ top: number; total: number }> = [];
+  /** Quarter turn used for two districts on a portrait screen. */
+  private turned = false;
   private riseTime = 0;
   private rising = false;
   private theme: Theme;
@@ -64,6 +91,7 @@ export class City {
   private pointer = new THREE.Vector2(-10, -10);
   private pointerPx = { x: 0, y: 0 };
   private hoverHandler: ((info: HoverInfo | null) => void) | null = null;
+  private labelHandler: ((items: LabelPos[]) => void) | null = null;
   private lastHover = -1;
 
   private disposed = false;
@@ -114,6 +142,11 @@ export class City {
 
   onHover(handler: (info: HoverInfo | null) => void) {
     this.hoverHandler = handler;
+  }
+
+  /** Fired every frame while two districts are on screen, never for one. */
+  onLabels(handler: (items: LabelPos[]) => void) {
+    this.labelHandler = handler;
   }
 
   // ---------------------------------------------------------------- scene
@@ -210,11 +243,12 @@ export class City {
     const count = 420;
     const pos = new Float32Array(count * 3);
     const vel = new Float32Array(count);
-    const half = (this.cols * CELL) / 2 + 4;
+    const half = (this.turned ? this.depth : this.cols) * CELL / 2 + 4;
+    const halfD = (this.turned ? this.cols : this.depth) * CELL / 2 + 2;
     for (let i = 0; i < count; i++) {
       pos[i * 3] = (Math.random() * 2 - 1) * half;
       pos[i * 3 + 1] = Math.random() * 18;
-      pos[i * 3 + 2] = (Math.random() * 2 - 1) * 9;
+      pos[i * 3 + 2] = (Math.random() * 2 - 1) * halfD;
       vel[i] = 0.25 + Math.random() * 0.9;
     }
     const geo = new THREE.BufferGeometry();
@@ -261,30 +295,80 @@ export class City {
   // ---------------------------------------------------------------- build
 
   build(days: Day[]) {
-    this.clear();
-    if (!days.length) return;
+    this.assemble([{ label: '', days }]);
+  }
 
-    const first = new Date(days[0].date + 'T00:00:00Z');
-    const offset = first.getUTCDay();
-    const max = Math.max(1, ...days.map((d) => d.count));
-    // Log scale, not linear. One 100-commit day would otherwise flatten a whole
-    // year of ordinary days into the pavement.
+  /**
+   * Two cities in one scene, laid out front to back. Both districts share a
+   * single height scale and a single colour scale, which is the whole point:
+   * per city normalisation would make a 5 commit best day look identical to a
+   * 500 commit one.
+   */
+  compare(a: District, b: District) {
+    this.assemble([a, b]);
+  }
+
+  /**
+   * True when two districts were turned a quarter and laid out left to right
+   * for a portrait screen. Callers use it to caption them differently.
+   */
+  get sideBySide() {
+    return this.turned;
+  }
+
+  private get depth() {
+    const n = Math.max(1, this.zones.length);
+    return n * ROWS + (n - 1) * GAP;
+  }
+
+  /** Local Z of the first row of a district. */
+  private zoneZ(zone: number) {
+    return zone * (ROWS + GAP) * CELL;
+  }
+
+  private assemble(districts: District[]) {
+    this.clear();
+    const filled = districts.filter((d) => d.days.length);
+    if (!filled.length) return;
+
+    this.zones = filled;
+    const many = filled.length > 1;
+    // A phone held upright has no room for two 53 week bands stacked in depth,
+    // so the whole layout gets a quarter turn: the year runs down the long axis
+    // and the two skylines sit left and right of each other.
+    this.turned = many && this.camera.aspect < 1;
+
+    // One scale across every district so the two skylines are comparable.
+    const max = Math.max(1, ...filled.flatMap((d) => d.days.map((x) => x.count)));
     const norm = Math.log1p(max);
 
-    this.buildings = days.map((day, i) => {
-      const idx = offset + i;
-      const col = Math.floor(idx / 7);
-      const row = idx % 7;
-      const n = Math.log1p(day.count) / norm;
-      return {
-        col,
-        row,
-        height: day.count === 0 ? MIN_HEIGHT : MIN_HEIGHT + n * (MAX_HEIGHT - MIN_HEIGHT),
-        delay: col * 0.016 + row * 0.012,
-        day,
-      };
+    this.buildings = [];
+    filled.forEach((district, zone) => {
+      const offset = new Date(district.days[0].date + 'T00:00:00Z').getUTCDay();
+      for (let i = 0; i < district.days.length; i++) {
+        const day = district.days[i];
+        const idx = offset + i;
+        const n = Math.log1p(day.count) / norm;
+        this.buildings.push({
+          col: Math.floor(idx / ROWS),
+          row: idx % ROWS,
+          zone,
+          height: day.count === 0 ? MIN_HEIGHT : MIN_HEIGHT + n * (MAX_HEIGHT - MIN_HEIGHT),
+          // GitHub's levels are bucketed per user, so they cannot be compared
+          // across accounts. Rebucket against the shared max instead.
+          shade: many
+            ? day.count === 0 ? 0 : Math.min(4, Math.ceil((day.count / max) * 4))
+            : day.level,
+          delay: Math.floor(idx / ROWS) * 0.016 + (idx % ROWS) * 0.012 + zone * 0.1,
+          day,
+        });
+      }
     });
     this.cols = Math.max(...this.buildings.map((b) => b.col)) + 1;
+    this.zoneMeta = filled.map((district, zone) => ({
+      top: Math.max(1, ...this.buildings.filter((b) => b.zone === zone).map((b) => b.height)),
+      total: district.days.reduce((a, d) => a + d.count, 0),
+    }));
 
     const geo = new THREE.BoxGeometry(FOOTPRINT, 1, FOOTPRINT);
     // Anchor at the base so scaling Y grows upward instead of both ways.
@@ -302,7 +386,14 @@ export class City {
     this.reflection.renderOrder = 0;
 
     const w = this.cols * CELL;
-    this.group.position.set(-w / 2 + CELL / 2, 0, -(7 * CELL) / 2 + CELL / 2);
+    // Centre the layout on the origin. A quarter turn swaps which axis is
+    // which, so the offsets swap with it.
+    this.group.rotation.y = this.turned ? Math.PI / 2 : 0;
+    this.group.position.set(
+      this.turned ? -((this.depth - 1) * CELL) / 2 : -(w - CELL) / 2,
+      0,
+      this.turned ? ((this.cols - 1) * CELL) / 2 : -((this.depth - 1) * CELL) / 2
+    );
     this.group.add(this.mesh, this.reflection);
 
     this.paint();
@@ -346,8 +437,7 @@ export class City {
     if (!this.mesh || !this.reflection) return;
     const c = new THREE.Color();
     for (let i = 0; i < this.buildings.length; i++) {
-      const lvl = this.buildings[i].day.level;
-      c.setHex(this.theme.ramp[Math.max(0, Math.min(4, lvl))]);
+      c.setHex(this.theme.ramp[Math.max(0, Math.min(4, this.buildings[i].shade))]);
       this.mesh.setColorAt(i, c);
       this.reflection.setColorAt(i, c);
     }
@@ -365,7 +455,7 @@ export class City {
       const eased = local === 0 ? 0 : 1 - Math.pow(2, -9 * local); // easeOutExpo
       const h = Math.max(0.001, b.height * eased);
       m.makeScale(1, h, 1);
-      m.setPosition(b.col * CELL, 0, b.row * CELL);
+      m.setPosition(b.col * CELL, 0, this.zoneZ(b.zone) + b.row * CELL);
       this.mesh.setMatrixAt(i, m);
       this.reflection.setMatrixAt(i, m);
     }
@@ -374,14 +464,23 @@ export class City {
   }
 
   private frameCamera() {
-    const halfW = (this.cols * CELL) / 2;
-    const halfD = (7 * CELL) / 2;
+    const many = this.zones.length > 1;
+    const halfCols = (this.cols * CELL) / 2;
+    const halfDepth = (this.depth * CELL) / 2;
+    const halfW = this.turned ? halfDepth : halfCols;
+    const halfD = this.turned ? halfCols : halfDepth;
     const topH = Math.max(1, ...this.buildings.map((b) => b.height));
 
-    const target = new THREE.Vector3(0, topH * 0.42, 0);
+    const target = new THREE.Vector3(0, topH * (many ? 0.3 : 0.42), 0);
     this.controls.target.copy(target);
 
-    const dir = new THREE.Vector3(-0.3, 0.42, 0.86).normalize();
+    // Two districts are read straight on, so they stack as two clean bands
+    // instead of shearing into each other. One city gets the livelier angle.
+    const dir = this.turned
+      ? new THREE.Vector3(0.06, 0.66, 0.75).normalize()
+      : many
+        ? new THREE.Vector3(-0.08, 0.6, 0.79).normalize()
+        : new THREE.Vector3(-0.3, 0.42, 0.86).normalize();
 
     // Exact fit: project every corner of the city's bounding box into camera
     // space and take the distance that keeps all eight inside the frustum.
@@ -449,8 +548,47 @@ export class City {
       this.hoverHandler(null);
     } else {
       const b = this.buildings[id];
-      this.hoverHandler({ date: b.day.date, count: b.day.count, x: this.pointerPx.x, y: this.pointerPx.y });
+      this.hoverHandler({
+        date: b.day.date,
+        count: b.day.count,
+        x: this.pointerPx.x,
+        y: this.pointerPx.y,
+        label: this.zones[b.zone]?.label ?? '',
+      });
     }
+  }
+
+  /**
+   * Screen anchors for the district captions, hung off the left end of each
+   * band so they never sit inside a skyline or drift into the other district.
+   */
+  private updateLabels() {
+    // Turned side by side on a phone the captions would sit behind the panels,
+    // and the table's own column order already says which city is which.
+    if (!this.labelHandler || this.zones.length < 2 || this.turned) return;
+
+    const r = this.canvas.getBoundingClientRect();
+    const v = new THREE.Vector3();
+
+    this.labelHandler(
+      this.zones.map((district, zone) => {
+        const meta = this.zoneMeta[zone];
+
+        // Stacked in depth the caption goes off the left end of its band: sat
+        // above, the near one lands in the gap and reads as neither city's.
+        v.set(-1.2 * CELL, Math.max(2.4, meta.top * 0.5), this.zoneZ(zone) + ((ROWS - 1) / 2) * CELL);
+        this.group.localToWorld(v);
+        v.project(this.camera);
+
+        return {
+          label: district.label,
+          total: meta.total,
+          x: (v.x * 0.5 + 0.5) * r.width + r.left,
+          y: (-v.y * 0.5 + 0.5) * r.height + r.top,
+          visible: v.z < 1,
+        };
+      })
+    );
   }
 
   private tickMotes(dt: number) {
@@ -482,6 +620,7 @@ export class City {
       this.tickMotes(dt);
       this.updateHover();
       this.controls.update();
+      this.updateLabels();
       this.composer.render();
     };
     loop();
@@ -508,8 +647,9 @@ export class City {
   exportSTL(): Blob {
     const parts: THREE.BufferGeometry[] = [];
     const w = this.cols * CELL;
+    const d = this.depth * CELL;
 
-    const plate = new THREE.BoxGeometry(w + 2, 0.6, 7 * CELL + 2);
+    const plate = new THREE.BoxGeometry(w + 2, 0.6, d + 2);
     plate.translate(0, -0.3, 0);
     parts.push(plate);
 
@@ -519,7 +659,7 @@ export class City {
       g.translate(
         b.col * CELL - w / 2 + CELL / 2,
         b.height / 2,
-        b.row * CELL - (7 * CELL) / 2 + CELL / 2
+        this.zoneZ(b.zone) + b.row * CELL - d / 2 + CELL / 2
       );
       parts.push(g);
     }
@@ -550,6 +690,8 @@ export class City {
     this.stars = this.motes = null;
     this.moteVel = null;
     this.buildings = [];
+    this.zones = [];
+    this.zoneMeta = [];
     this.lastHover = -1;
   }
 

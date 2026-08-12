@@ -74,8 +74,39 @@
 
     <aside class="board" id="board" hidden aria-label="Contributor leaderboard"></aside>
 
+    <aside class="versus" id="versus" hidden aria-label="Compare two users">
+      <div class="board-head">
+        <h2>Head to head</h2>
+        <button class="vs-x" id="vs-close" type="button" aria-label="Close comparison">&times;</button>
+      </div>
+
+      <form class="vs-form" id="vs-form">
+        <label class="sr-only" for="vs-a">First username</label>
+        <input id="vs-a" type="text" placeholder="username" autocomplete="off" autocapitalize="none" spellcheck="false" />
+        <span class="vs-mid" aria-hidden="true">vs</span>
+        <label class="sr-only" for="vs-b">Second username</label>
+        <input id="vs-b" type="text" placeholder="username" autocomplete="off" autocapitalize="none" spellcheck="false" />
+        <button class="vs-go" type="submit" id="vs-go">Compare</button>
+      </form>
+
+      <table class="vs-table" id="vs-table" hidden>
+        <thead>
+          <tr><th></th><th id="vs-h-a">A</th><th id="vs-h-b">B</th></tr>
+        </thead>
+        <tbody id="vs-body"></tbody>
+      </table>
+
+      <p class="board-note" id="vs-note"></p>
+    </aside>
+
+    <div class="tags" id="tags" hidden aria-hidden="true">
+      <span class="tag" id="tag-0"></span>
+      <span class="tag" id="tag-1"></span>
+    </div>
+
     <nav class="actions">
-      <button id="a-board" title="Compare contributors" aria-pressed="false">Board</button>
+      <button id="a-versus" title="Compare two users side by side" aria-pressed="false">Versus</button>
+      <button id="a-board" title="Rank a group of contributors" aria-pressed="false">Board</button>
       <button id="a-png" title="Save a PNG of the current view">PNG</button>
       <button id="a-stl" title="Export a printable STL model">STL</button>
       <button id="a-share" title="Copy a link to this city">Share</button>

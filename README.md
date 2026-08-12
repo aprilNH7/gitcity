@@ -17,10 +17,11 @@ GitHub's own Skyline was the fun way to look back at a year of work, and it is g
 - **Log scaled heights.** One 100 commit day does not flatten the rest of the year into the pavement.
 - **Hover any building** to see the date and exact count.
 - **Leaderboard.** Rank up to twelve people by contribution volume across all time, the rolling last twelve months, or any single year. Click a row to build that person's city.
+- **Head to head.** Drop two people into one scene on one shared scale and read the gap off the skyline.
 - **Five themes.** Neon, Aurora, Sunset, Matrix, Ice.
 - **Save a PNG** of the current camera angle.
 - **Export an STL** and print your year. Buildings sit on a base plate, ready to slice.
-- **Shareable links.** `?user=torvalds&range=2024&theme=sunset` restores the exact view, and `?users=a,b,c&period=all` restores a board.
+- **Shareable links.** `?user=torvalds&range=2024&theme=sunset` restores the exact view, `?users=a,b,c&period=all` restores a board, and `?vs=a,b` restores a head to head.
 
 ## Leaderboard
 
@@ -31,6 +32,18 @@ Put a group side by side and rank them by contribution volume, across all time, 
 **[Open this board](https://aprilnh7.github.io/gitcity/?user=torvalds&range=2024&users=torvalds,sindresorhus,gaearon,yyx990803,kentcdodds,tj&period=all)**
 
 Your board is remembered locally and travels in the URL, so a link carries the whole comparison.
+
+## Head to head
+
+Two people, one scene, one scale. Both years are rendered as neighbouring districts and a table breaks the year down into five numbers with the winner of each highlighted.
+
+![torvalds and gaearon rendered side by side for 2024](docs/shot-versus.png)
+
+**[Open this comparison](https://aprilnh7.github.io/gitcity/?vs=torvalds,gaearon&range=2024)**
+
+The shared scale is the whole point. Heights and colours are bucketed against the busiest day found across *both* accounts, not each account's own maximum, so a quiet year genuinely looks quiet next to a loud one. Read against GitHub's per profile intensity levels the two skylines would look identical no matter how far apart the totals were.
+
+On a phone the pair is turned a quarter so the year runs down the long axis and the two cities sit left and right instead of one behind the other.
 
 ## Themes
 
@@ -72,7 +85,7 @@ npm run build    # typecheck + production bundle
 npm run smoke    # end to end checks against a running dev server
 ```
 
-The smoke test covers data loading, hover raycasting, theme switching, STL and PNG export, unknown user handling, and the mobile layout.
+The smoke test covers data loading, hover raycasting, theme switching, STL and PNG export, the leaderboard, head to head comparison, unknown user handling, deep links, and the mobile layout.
 
 ## Contributing
 

@@ -56,12 +56,14 @@ check('theme switch', (await page.getAttribute('button[data-id="sunset"]', 'aria
 check('theme in url', page.url().includes('theme=sunset'));
 
 // STL export produces a real binary mesh, not an empty file.
+let singleStl = 0;
 const [stl] = await Promise.all([
   page.waitForEvent('download', { timeout: 25000 }).catch(() => null),
   page.click('#a-stl'),
 ]);
 if (stl) {
   const { size } = await stat(await stl.path());
+  singleStl = size;
   check('STL export', size > 50_000, `${stl.suggestedFilename()} · ${size} bytes`);
 } else {
   check('STL export', false, 'no download fired');
@@ -144,6 +146,67 @@ check('remove user', !shrunk.some((r) => r.user.toLowerCase() === 'kentcdodds'),
 await page.click('#a-board');
 check('board closes', !(await page.isVisible('#board')));
 
+// ------------------------------------------------------------------ versus
+
+await page.click('#a-versus');
+check('versus opens', await page.isVisible('#versus'));
+
+// Comparing someone with themselves is refused rather than silently rendered.
+await page.fill('#vs-a', 'torvalds');
+await page.fill('#vs-b', 'TORVALDS');
+await page.click('#vs-go');
+await page.waitForTimeout(400);
+check('rejects self compare', /different people/i.test((await page.textContent('#vs-note')) ?? ''));
+
+await page.selectOption('#range', '2024');
+await page.fill('#vs-a', 'torvalds');
+await page.fill('#vs-b', 'gaearon');
+await page.click('#vs-go');
+await page.waitForSelector('#vs-table:not([hidden])', { timeout: 30000 }).catch(() => {});
+await page.waitForTimeout(4500);
+
+check('versus table', (await page.$$('#vs-body tr')).length === 5, `${(await page.$$('#vs-body tr')).length} rows`);
+check(
+  'versus headers',
+  (await page.textContent('#vs-h-a')) === 'torvalds' && (await page.textContent('#vs-h-b')) === 'gaearon',
+);
+
+// torvalds wins 2024 on volume, gaearon wins on best day: a winner must be
+// marked in each column, which exercises the comparator both ways.
+const winCols = await page.$$eval('#vs-body tr', (rows) =>
+  rows.map((r) => [...r.children].findIndex((c) => c.classList.contains('win'))),
+);
+check('winner per row', winCols.length === 5 && winCols.every((i) => i > 0), winCols.join(','));
+check('winners on both sides', new Set(winCols).size > 1, winCols.join(','));
+
+// Two districts really exist in the scene: captions are projected on screen
+// and the mesh roughly doubles.
+const tags = await page.$$eval('.tag', (els) =>
+  els.map((el) => ({ text: el.textContent?.trim() ?? '', left: el.getBoundingClientRect().left })),
+);
+check('both districts labelled', tags[0].text.startsWith('torvalds') && tags[1].text.startsWith('gaearon'), tags.map((t) => t.text).join(' | '));
+check('labels projected on screen', tags.every((t) => t.left > 0 && t.left < 1440), tags.map((t) => Math.round(t.left)).join(','));
+check('single city stats hidden', !(await page.isVisible('#stats')));
+check('versus in url', /vs=torvalds%2Cgaearon|vs=torvalds,gaearon/i.test(page.url()), page.url().slice(-52));
+
+const [stl2] = await Promise.all([
+  page.waitForEvent('download', { timeout: 30000 }).catch(() => null),
+  page.click('#a-stl'),
+]);
+if (stl2) {
+  const { size } = await stat(await stl2.path());
+  check('versus STL has both cities', size > singleStl * 1.4, `${size} vs ${singleStl} bytes`);
+  check('versus STL filename', /torvalds-vs-gaearon/.test(stl2.suggestedFilename()), stl2.suggestedFilename());
+} else {
+  check('versus STL has both cities', false, 'no download fired');
+}
+
+// Closing drops back to a single city for the left hand side.
+await page.click('#vs-close');
+await page.waitForTimeout(4000);
+check('close returns to one city', (await page.isVisible('#stats')) && (await page.isHidden('#tags')));
+check('back to single in url', page.url().includes('user=torvalds') && !page.url().includes('vs='));
+
 // An unknown user gets a readable message rather than a blank screen.
 await page.fill('#user', 'this-user-should-not-exist-zzz9');
 await page.click('#go');
@@ -157,6 +220,19 @@ await page.waitForTimeout(1200);
 check('mobile layout', await page.isVisible('#panel'));
 await page.click('#a-board');
 check('mobile board fits', await page.isVisible('#board .board-list'));
+await page.click('#a-board');
+
+// Portrait turns a comparison a quarter so the two cities sit left and right,
+// and drops the floating captions that would hide behind the panels.
+await page.click('#a-versus');
+await page.fill('#vs-a', 'torvalds');
+await page.fill('#vs-b', 'tj');
+await page.click('#vs-go');
+await page.waitForSelector('#vs-table:not([hidden])', { timeout: 30000 }).catch(() => {});
+await page.waitForTimeout(4000);
+const portraitNote = (await page.textContent('#vs-note')) ?? '';
+check('portrait compares side by side', /left,.*right/.test(portraitNote), portraitNote);
+check('portrait drops captions', await page.isHidden('#tags'));
 
 // A shared board link lands with the board already open on the right period.
 await page.setViewportSize({ width: 1440, height: 860 });
@@ -165,6 +241,17 @@ await page.goto(deepURL, { waitUntil: 'networkidle' });
 await page.waitForTimeout(2500);
 check('board deep link opens', await page.isVisible('#board'));
 check('deep link period', (await page.inputValue('#board .board-period')) === '2024');
+
+// So does a head to head link.
+const vsURL = `${URL}${URL.includes('?') ? '&' : '?'}vs=torvalds,sindresorhus`;
+await page.goto(vsURL, { waitUntil: 'networkidle' });
+await page.waitForSelector('#vs-table:not([hidden])', { timeout: 30000 }).catch(() => {});
+await page.waitForTimeout(2500);
+check('versus deep link opens', await page.isVisible('#versus'));
+check(
+  'versus deep link loads both',
+  (await page.textContent('#vs-h-b')) === 'sindresorhus' && (await page.isHidden('#stats')),
+);
 
 check('no runtime errors', errors.length === 0, errors.slice(0, 2).join(' | '));
 check('no broken assets', badResponses.length === 0, badResponses.slice(0, 2).join(' | '));
