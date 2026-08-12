@@ -1,0 +1,23 @@
+{
+  "name": "gitcity",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Turn any GitHub contribution graph into a living 3D neon city.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.169.0",
+    "playwright": "^1.61.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  }
+}
