@@ -36,27 +36,67 @@ interface ApiPayload {
   contributions?: Day[];
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * A transient upstream failure reaches the browser as an unreadable rejection
+ * rather than a status code. Rate limited and 5xx responses arrive without an
+ * Access-Control-Allow-Origin header, so fetch rejects before anything can be
+ * inspected, and a momentarily busy API looks exactly like a dead connection.
+ *
+ * One attempt is therefore not enough to conclude anything. Retrying twice is
+ * what tells a passing hiccup apart from a real outage, and costs nothing when
+ * the first attempt succeeds.
+ */
+const ATTEMPTS = 3;
+const BACKOFF_MS = [0, 600, 1800];
+
 async function request(user: string, range: string): Promise<{ clean: string; json: ApiPayload }> {
   const clean = user.trim().replace(/^@/, '');
   if (!USERNAME_RE.test(clean)) {
     throw new ContributionError(`"${user}" is not a valid GitHub username.`, 'notfound');
   }
 
-  let res: Response;
-  try {
-    res = await fetch(`${API}/${encodeURIComponent(clean)}?y=${encodeURIComponent(range)}`);
-  } catch {
-    throw new ContributionError('Could not reach the contributions API. Check your connection.', 'network');
+  const url = `${API}/${encodeURIComponent(clean)}?y=${encodeURIComponent(range)}`;
+  let status = 0;
+
+  for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
+    // Jittered so a board loading several people does not retry in lockstep.
+    if (attempt) await sleep(BACKOFF_MS[attempt] + Math.random() * 300);
+
+    let res: Response;
+    try {
+      res = await fetch(url);
+    } catch {
+      continue;
+    }
+
+    // A missing user is settled, so retrying only wastes the caller's time.
+    if (res.status === 404) {
+      throw new ContributionError(`GitHub user "${clean}" not found.`, 'notfound');
+    }
+    if (res.status === 429 || res.status >= 500) {
+      status = res.status;
+      continue;
+    }
+    if (!res.ok) {
+      throw new ContributionError(`Contributions API returned ${res.status}.`, 'network');
+    }
+
+    return { clean, json: (await res.json()) as ApiPayload };
   }
 
-  if (res.status === 404) {
-    throw new ContributionError(`GitHub user "${clean}" not found.`, 'notfound');
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    throw new ContributionError('You appear to be offline. Check your connection.', 'network');
   }
-  if (!res.ok) {
-    throw new ContributionError(`Contributions API returned ${res.status}.`, 'network');
-  }
-
-  return { clean, json: (await res.json()) as ApiPayload };
+  throw new ContributionError(
+    status
+      ? `Contributions API returned ${status}. Give it a few seconds and try again.`
+      : 'The contributions API is not responding. Give it a few seconds and try again.',
+    'network',
+  );
 }
 
 /**

@@ -81,11 +81,14 @@ npm run dev
 Then open http://localhost:5173.
 
 ```bash
-npm run build    # typecheck + production bundle
-npm run smoke    # end to end checks against a running dev server
+npm run build             # typecheck + production bundle
+npm run smoke             # end to end checks against a running dev server
+npm run smoke:resilience  # failure paths, with the API stubbed out
 ```
 
 The smoke test covers data loading, hover raycasting, theme switching, STL and PNG export, the leaderboard, head to head comparison, unknown user handling, deep links, and the mobile layout.
+
+The resilience test covers what happens when things go wrong: a request that fails once and succeeds on retry, an API that never answers, a username that does not exist, and Compare being clicked while another city is still building.
 
 ## Contributing
 

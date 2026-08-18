@@ -9,7 +9,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "smoke:resilience": "node scripts/resilience.mjs"
   },
   "dependencies": {
     "three": "^0.169.0"

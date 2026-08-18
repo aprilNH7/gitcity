@@ -227,9 +227,20 @@ async function loadVersus(a: string, b: string, range: string) {
     vsNote.textContent = 'Pick two different people.';
     return;
   }
+  // Changing the range kicks off a single city build, and the obvious next
+  // move is to click Compare. Dropping that click makes the button look dead,
+  // so wait the build out instead of refusing. Bounded, so a wedged request
+  // still surfaces rather than hanging the button forever.
   if (loading) {
-    vsNote.textContent = 'Still building the last view, try again in a second.';
-    return;
+    vsGo.disabled = true;
+    vsNote.textContent = 'Waiting for the current city to finish…';
+    const until = Date.now() + 20_000;
+    while (loading && Date.now() < until) await new Promise((r) => setTimeout(r, 60));
+    vsGo.disabled = false;
+    if (loading) {
+      vsNote.textContent = 'Still building the last view, try again in a second.';
+      return;
+    }
   }
 
   loading = true;
