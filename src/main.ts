@@ -97,7 +97,7 @@ function buildThemeButtons() {
 function buildRangeOptions(selected: string) {
   const year = new Date().getUTCFullYear();
   const opts: Array<[string, string]> = [['last', 'Last 12 months']];
-  for (let y = year; y >= year - 9; y--) opts.push([String(y), String(y)]);
+  for (let y = year; y >= year - RANGE_YEAR_COUNT; y--) opts.push([String(y), String(y)]);
   rangeSel.innerHTML = '';
   for (const [value, label] of opts) addOption(rangeSel, value, label);
   rangeSel.value = opts.some(([v]) => v === selected) ? selected : 'last';
@@ -120,6 +120,7 @@ const TOOLTIP_OFFSET_PX = 14;
 const TOOLTIP_EDGE_PAD_PX = 10;
 const TOOLTIP_MIN_W_PX = 160;
 const TOOLTIP_MIN_H_PX = 44;
+const RANGE_YEAR_COUNT = 9;
 
 let toastTimer: number | undefined;
 function toast(text: string) {
