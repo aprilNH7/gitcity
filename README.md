@@ -4,7 +4,7 @@ Turn any GitHub contribution graph into a living 3D city. Every day is a buildin
 
 **[Open the live demo](https://aprilnh7.github.io/gitcity/?user=torvalds&range=2024)**
 
-![gitcity rendering torvalds' 2024 contributions](docs/shot-neon.png)
+![gitcity rendering torvalds's 2024 contributions](docs/shot-neon.png)
 
 ## Why
 
@@ -17,11 +17,11 @@ GitHub's own Skyline was the fun way to look back at a year of work, and it is g
 - **Log scaled heights.** One 100 commit day does not flatten the rest of the year into the pavement.
 - **Hover any building** to see the date and exact count.
 - **Leaderboard.** Rank up to twelve people by contribution volume across all time, the rolling last twelve months, or any single year. Click a row to build that person's city.
-- **Head to head.** Drop two people into one scene on one shared scale and read the gap off the skyline.
+- **Head-to-head.** Drop two people into one scene on one shared scale and read the gap off the skyline.
 - **Five themes.** Neon, Aurora, Sunset, Matrix, Ice.
 - **Save a PNG** of the current camera angle.
 - **Export an STL** and print your year. Buildings sit on a base plate, ready to slice.
-- **Shareable links.** `?user=torvalds&range=2024&theme=sunset` restores the exact view, `?users=a,b,c&period=all` restores a board, and `?vs=a,b` restores a head to head.
+- **Shareable links.** `?user=torvalds&range=2024&theme=sunset` restores the exact view, `?users=a,b,c&period=all` restores a board, and `?vs=a,b` restores a head-to-head.
 
 ## Leaderboard
 
@@ -59,7 +59,7 @@ On a phone the pair is turned a quarter so the year runs down the long axis and 
 
 The whole city is a single `InstancedMesh`, one instance per day, so a full year is one draw call.
 
-`MeshStandardMaterial` has no per instance emissive slot, which is a problem when every building needs to glow its own colour. gitcity patches the shader in `onBeforeCompile` and drives `totalEmissiveRadiance` from the instance colour instead. The same patch adds the window grid, generated procedurally from world position and surface normal, so rows line up across a building regardless of how tall it scaled and every wall gets covered without a texture.
+`MeshStandardMaterial` has no per-instance emissive slot, which is a problem when every building needs to glow its own colour. gitcity patches the shader in `onBeforeCompile` and drives `totalEmissiveRadiance` from the instance colour instead. The same patch adds the window grid, generated procedurally from world position and surface normal, so rows line up across a building regardless of how tall it scaled and every wall gets covered without a texture.
 
 The reflection is a second `InstancedMesh` sharing the same matrices with `scale.y = -1`, sitting under a semi-transparent plaza. Cheaper than a real reflection pass and it survives bloom, which a `Reflector` does not.
 
@@ -86,7 +86,7 @@ npm run smoke             # end-to-end checks against a running dev server
 npm run smoke:resilience  # failure paths, with the API stubbed out
 ```
 
-The smoke test covers data loading, hover raycasting, theme switching, STL and PNG export, the leaderboard, head to head comparison, unknown user handling, deep links, and the mobile layout.
+The smoke test covers data loading, hover raycasting, theme switching, STL and PNG export, the leaderboard, head-to-head comparison, unknown user handling, deep links, and the mobile layout.
 
 The resilience test covers what happens when things go wrong: a request that fails once and succeeds on retry, an API that never answers, a username that does not exist, and Compare being clicked while another city is still building.
 
