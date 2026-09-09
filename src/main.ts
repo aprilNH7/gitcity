@@ -113,6 +113,9 @@ function ensureRangeOption(range: string) {
   addOption(rangeSel, range, range);
 }
 
+const TOAST_MS = 2200;
+const TOAST_FADE_MS = 250;
+
 let toastTimer: number | undefined;
 function toast(text: string) {
   toastEl.textContent = text;
@@ -121,8 +124,8 @@ function toast(text: string) {
   window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => {
     toastEl.classList.remove('show');
-    window.setTimeout(() => (toastEl.hidden = true), 250);
-  }, 2200);
+    window.setTimeout(() => (toastEl.hidden = true), TOAST_FADE_MS);
+  }, TOAST_MS);
 }
 
 function message(text: string | null, kind: 'error' | 'info' = 'error') {
