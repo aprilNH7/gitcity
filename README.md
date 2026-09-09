@@ -33,7 +33,7 @@ Put a group side by side and rank them by contribution volume, across all time, 
 
 Your board is remembered locally and travels in the URL, so a link carries the whole comparison.
 
-## Head to head
+## Head-to-head
 
 Two people, one scene, one scale. Both years are rendered as neighbouring districts and a table breaks the year down into five numbers with the winner of each highlighted.
 
