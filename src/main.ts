@@ -121,6 +121,8 @@ const TOOLTIP_EDGE_PAD_PX = 10;
 const TOOLTIP_MIN_W_PX = 160;
 const TOOLTIP_MIN_H_PX = 44;
 const RANGE_YEAR_COUNT = 9;
+const VS_WAIT_MS = 20_000;
+const VS_POLL_MS = 60;
 
 let toastTimer: number | undefined;
 function toast(text: string) {
@@ -248,8 +250,8 @@ async function loadVersus(a: string, b: string, range: string) {
   if (loading) {
     vsGo.disabled = true;
     vsNote.textContent = 'Waiting for the current city to finish…';
-    const until = Date.now() + 20_000;
-    while (loading && Date.now() < until) await new Promise((r) => setTimeout(r, 60));
+    const until = Date.now() + VS_WAIT_MS;
+    while (loading && Date.now() < until) await new Promise((r) => setTimeout(r, VS_POLL_MS));
     vsGo.disabled = false;
     if (loading) {
       vsNote.textContent = 'Still building the last view, try again in a second.';
