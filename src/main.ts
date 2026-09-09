@@ -99,12 +99,7 @@ function buildRangeOptions(selected: string) {
   const opts: Array<[string, string]> = [['last', 'Last 12 months']];
   for (let y = year; y >= year - 9; y--) opts.push([String(y), String(y)]);
   rangeSel.innerHTML = '';
-  for (const [value, label] of opts) {
-    const o = document.createElement('option');
-    o.value = value;
-    o.textContent = label;
-    rangeSel.appendChild(o);
-  }
+  for (const [value, label] of opts) addOption(rangeSel, value, label);
   rangeSel.value = opts.some(([v]) => v === selected) ? selected : 'last';
 }
 
@@ -115,10 +110,7 @@ function buildRangeOptions(selected: string) {
  */
 function ensureRangeOption(range: string) {
   if ([...rangeSel.options].some((o) => o.value === range)) return;
-  const o = document.createElement('option');
-  o.value = range;
-  o.textContent = range;
-  rangeSel.appendChild(o);
+  addOption(rangeSel, range, range);
 }
 
 let toastTimer: number | undefined;
@@ -162,6 +154,13 @@ function syncURL() {
 }
 
 const fmt = new Intl.NumberFormat('en-US');
+
+function addOption(select: HTMLSelectElement, value: string, label: string) {
+  const o = document.createElement('option');
+  o.value = value;
+  o.textContent = label;
+  select.appendChild(o);
+}
 
 function renderStats(c: Contributions) {
   const s = computeStats(c.days);
