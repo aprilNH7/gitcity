@@ -128,6 +128,9 @@ let toastTimer: number | undefined;
 function toast(text: string) {
   toastEl.textContent = text;
   toastEl.hidden = false;
+  // Removing hidden and adding the transition class in the same frame can
+  // skip the CSS transition, so let the browser paint the revealed element
+  // before toggling opacity.
   requestAnimationFrame(() => toastEl.classList.add('show'));
   window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => {
