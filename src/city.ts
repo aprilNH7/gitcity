@@ -18,6 +18,8 @@ const FOOTPRINT = 0.78;
 const MIN_HEIGHT = 0.18;
 const MAX_HEIGHT = 11;
 const RISE_DURATION = 0.9;
+const RISE_PAD = 0.2;
+const HOVER_NONE = -1;
 
 /** Clamp a value between a lower and upper bound. */
 function clamp(v: number, min: number, max: number) {
@@ -97,7 +99,7 @@ export class City {
   private pointerPx = { x: 0, y: 0 };
   private hoverHandler: ((info: HoverInfo | null) => void) | null = null;
   private labelHandler: ((items: LabelPos[]) => void) | null = null;
-  private lastHover = -1;
+  private lastHover = HOVER_NONE;
 
   private disposed = false;
 
@@ -533,8 +535,8 @@ export class City {
 
   private onPointerLeave = () => {
     this.pointer.set(-10, -10);
-    if (this.lastHover !== -1) {
-      this.lastHover = -1;
+    if (this.lastHover !== HOVER_NONE) {
+      this.lastHover = HOVER_NONE;
       this.hoverHandler?.(null);
     }
   };
@@ -545,11 +547,11 @@ export class City {
 
     this.raycaster.setFromCamera(this.pointer, this.camera);
     const hit = this.raycaster.intersectObject(this.mesh, false)[0];
-    const id = hit && hit.instanceId !== undefined ? hit.instanceId : -1;
+    const id = hit && hit.instanceId !== undefined ? hit.instanceId : HOVER_NONE;
     if (id === this.lastHover) return;
 
     this.lastHover = id;
-    if (id === -1) {
+    if (id === HOVER_NONE) {
       this.hoverHandler(null);
     } else {
       const b = this.buildings[id];
@@ -618,7 +620,7 @@ export class City {
         this.riseTime += dt;
         this.writeMatrices(this.riseTime);
         const last = this.buildings[this.buildings.length - 1];
-        if (last && this.riseTime > last.delay + RISE_DURATION + 0.2) this.rising = false;
+        if (last && this.riseTime > last.delay + RISE_DURATION + RISE_PAD) this.rising = false;
       }
 
       if (this.stars) this.stars.rotation.y += dt * 0.006;
@@ -697,7 +699,7 @@ export class City {
     this.buildings = [];
     this.zones = [];
     this.zoneMeta = [];
-    this.lastHover = -1;
+    this.lastHover = HOVER_NONE;
   }
 
   dispose() {
