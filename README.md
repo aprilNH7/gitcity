@@ -8,7 +8,7 @@ Turn any GitHub contribution graph into a living 3D city. Every day is a buildin
 
 ## Why
 
-GitHub's own Skyline was the fun way to look back at a year of work, and it is gone. `skyline.github.com` no longer resolves. gitcity is a replacement that runs entirely in the browser, needs no login, and does more than the original: five themes, per day inspection, PNG export, and the STL export that made Skyline worth printing.
+GitHub's own Skyline was the fun way to look back at a year of work, and it is gone. `skyline.github.com` no longer resolves. gitcity is a replacement that runs entirely in the browser, needs no login, and does more than the original: five themes, per-day inspection, PNG export, and the STL export that made Skyline worth printing.
 
 ## What it does
 
@@ -61,7 +61,7 @@ The whole city is a single `InstancedMesh`, one instance per day, so a full year
 
 `MeshStandardMaterial` has no per instance emissive slot, which is a problem when every building needs to glow its own colour. gitcity patches the shader in `onBeforeCompile` and drives `totalEmissiveRadiance` from the instance colour instead. The same patch adds the window grid, generated procedurally from world position and surface normal, so rows line up across a building regardless of how tall it scaled and every wall gets covered without a texture.
 
-The reflection is a second `InstancedMesh` sharing the same matrices with `scale.y = -1`, sitting under a semi transparent plaza. Cheaper than a real reflection pass and it survives bloom, which a `Reflector` does not.
+The reflection is a second `InstancedMesh` sharing the same matrices with `scale.y = -1`, sitting under a semi-transparent plaza. Cheaper than a real reflection pass and it survives bloom, which a `Reflector` does not.
 
 Camera framing projects all eight corners of the city's bounding box into camera space and solves for the distance that keeps every corner inside the frustum. That is what keeps the full year in frame on both an ultrawide monitor and a portrait phone.
 
@@ -69,7 +69,7 @@ The leaderboard costs exactly one request per person no matter how many periods 
 
 ## Data
 
-Contribution data comes from [github-contributions-api](https://github-contributions-api.jogruber.de), a public read only mirror of the profile graph. No token, no login, nothing stored. If the API is unreachable the app falls back to a generated demo city so the scene is never empty.
+Contribution data comes from [github-contributions-api](https://github-contributions-api.jogruber.de), a public, read-only mirror of the profile graph. No token, no login, nothing stored. If the API is unreachable the app falls back to a generated demo city so the scene is never empty.
 
 ## Run it locally
 
@@ -81,8 +81,8 @@ npm run dev
 Then open http://localhost:5173.
 
 ```bash
-npm run build             # typecheck + production bundle
-npm run smoke             # end to end checks against a running dev server
+npm run build             # type check + production bundle
+npm run smoke             # end-to-end checks against a running dev server
 npm run smoke:resilience  # failure paths, with the API stubbed out
 ```
 
