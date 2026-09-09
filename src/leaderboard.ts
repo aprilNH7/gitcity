@@ -25,6 +25,8 @@ const SEED = ['torvalds', 'sindresorhus', 'gaearon', 'yyx990803'];
 const STORE_KEY = 'gitcity.users';
 const MAX_USERS = 12;
 const CONCURRENCY = 3;
+const AVATAR_SIZE = 48;
+const NOTE_CLEAR_MS = 3200;
 
 const fmt = new Intl.NumberFormat('en-US');
 
@@ -211,7 +213,7 @@ export class Leaderboard {
     window.clearTimeout(this.noteTimer);
     this.noteTimer = window.setTimeout(() => {
       if (this.el.note.textContent === text) this.el.note.textContent = this.defaultNote();
-    }, 3200);
+    }, NOTE_CLEAR_MS);
   }
 
   /** Shown whenever there is no transient message to display. */
@@ -286,7 +288,7 @@ export class Leaderboard {
     li.innerHTML = `
       <span class="bar" style="width:${pct.toFixed(1)}%"></span>
       <span class="rank">${rank}</span>
-      <img class="avatar" src="https://github.com/${encodeURIComponent(row.user)}.png?size=48" alt="" loading="lazy" />
+      <img class="avatar" src="https://github.com/${encodeURIComponent(row.user)}.png?size=${AVATAR_SIZE}" alt="" loading="lazy" />
       <span class="who">
         <span class="name">${row.user}</span>
         <span class="sub">${fmt.format(stats.longestStreak)}d streak · ${fmt.format(stats.best?.count ?? 0)} best day</span>
