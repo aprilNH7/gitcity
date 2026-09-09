@@ -88,6 +88,10 @@ export const THEMES: Theme[] = [
   },
 ];
 
+/**
+ * Resolve a theme id to a concrete theme.
+ * Falls back to the first theme when the id is missing or unknown.
+ */
 export function themeById(id: string | null | undefined): Theme {
   return THEMES.find((t) => t.id === id) ?? THEMES[0];
 }
