@@ -212,20 +212,26 @@ export function computeStats(days: Day[]): Stats {
   return { total, best, activeDays, longestStreak: longest, currentStreak: current };
 }
 
+const DEMO_DAYS = 365;
+const MS_PER_DAY = 86400000;
+const DEMO_MAX = 14;
+const DEMO_THRESHOLD = 1.4;
+const DEMO_WEEKEND_WEIGHT = 0.35;
+
 /** A hand made graph so the scene is never empty, even offline. */
 export function demoContributions(): Contributions {
   const days: Day[] = [];
   const start = new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1));
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(start.getTime() + i * 86400000);
+  for (let i = 0; i < DEMO_DAYS; i++) {
+    const d = new Date(start.getTime() + i * MS_PER_DAY);
     const week = Math.floor(i / 7);
     // Two gentle swells across the year plus a weekday bias, so the demo
     // skyline reads like a real habit rather than noise.
     const season = Math.sin((week / 52) * Math.PI * 2) * 0.5 + 0.5;
-    const weekday = d.getUTCDay() === 0 || d.getUTCDay() === 6 ? 0.35 : 1;
+    const weekday = d.getUTCDay() === 0 || d.getUTCDay() === 6 ? DEMO_WEEKEND_WEIGHT : 1;
     const noise = Math.abs(Math.sin(i * 12.9898) * 43758.5453 % 1);
-    const raw = season * weekday * noise * 14;
-    const count = raw < 1.4 ? 0 : Math.round(raw);
+    const raw = season * weekday * noise * DEMO_MAX;
+    const count = raw < DEMO_THRESHOLD ? 0 : Math.round(raw);
     days.push({
       date: d.toISOString().slice(0, 10),
       count,
