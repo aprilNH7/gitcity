@@ -229,6 +229,7 @@ function loadDemo() {
 // ------------------------------------------------------------------ versus
 
 const rangeLabel = (r: string) => (r === 'last' ? 'the last 12 months' : r);
+const setVsNote = (text: string) => (vsNote.textContent = text);
 
 /**
  * Two cities in one scene. Both sides are fetched for the same range, because
@@ -239,11 +240,11 @@ async function loadVersus(a: string, b: string, range: string) {
   const right = b.trim().replace(/^@/, '');
 
   if (!left || !right) {
-    vsNote.textContent = 'Two usernames needed.';
+    setVsNote('Two usernames needed.');
     return;
   }
   if (left.toLowerCase() === right.toLowerCase()) {
-    vsNote.textContent = 'Pick two different people.';
+    setVsNote('Pick two different people.');
     return;
   }
   // Changing the range kicks off a single city build, and the obvious next
@@ -252,19 +253,19 @@ async function loadVersus(a: string, b: string, range: string) {
   // still surfaces rather than hanging the button forever.
   if (loading) {
     vsGo.disabled = true;
-    vsNote.textContent = 'Waiting for the current city to finish…';
+    setVsNote('Waiting for the current city to finish…');
     const until = Date.now() + VS_WAIT_MS;
     while (loading && Date.now() < until) await new Promise((r) => setTimeout(r, VS_POLL_MS));
     vsGo.disabled = false;
     if (loading) {
-      vsNote.textContent = 'Still building the last view, try again in a second.';
+      setVsNote('Still building the last view, try again in a second.');
       return;
     }
   }
 
   loading = true;
   vsGo.disabled = true;
-  vsNote.textContent = `Building both cities for ${rangeLabel(range)}…`;
+  setVsNote(`Building both cities for ${rangeLabel(range)}…`);
 
   // Settled, not all: one bad username should name itself rather than fail
   // the whole comparison anonymously.
@@ -282,9 +283,9 @@ async function loadVersus(a: string, b: string, range: string) {
   ].filter(Boolean) as Array<{ who: string; err: unknown }>;
 
   if (failed.length) {
-    vsNote.textContent = failed
+    setVsNote(failed
       .map((f) => (f.err instanceof ContributionError ? f.err.message : `Could not load ${f.who}.`))
-      .join(' ');
+      .join(' '));
     return;
   }
 
@@ -352,9 +353,9 @@ function renderVersus(A: Contributions, B: Contributions) {
   vsTable.hidden = false;
   // Turned side by side there are no floating captions, so the mapping from
   // table column to skyline has to be said out loud.
-  vsNote.textContent = city.sideBySide
+  setVsNote(city.sideBySide
     ? `${rangeLabel(A.range)}. ${A.user} left, ${B.user} right, one shared scale.`
-    : `${rangeLabel(A.range)}. Both cities share one height and colour scale.`;
+    : `${rangeLabel(A.range)}. Both cities share one height and colour scale.`);
 }
 
 /** Best rolling 7 day total, a fairer read on peak output than a single day. */
@@ -420,7 +421,7 @@ function showVersus(show: boolean) {
   if (board.visible) showBoard(false);
   if (!vsA.value) vsA.value = current && current.user !== 'demo' ? current.user : '';
   (vsA.value ? vsB : vsA).focus();
-  if (!pair) vsNote.textContent = 'Two usernames, one shared scale.';
+  if (!pair) setVsNote('Two usernames, one shared scale.');
 }
 
 /** Tears the comparison down without loading anything. Returns the left side. */
