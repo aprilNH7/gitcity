@@ -19,6 +19,11 @@ const MIN_HEIGHT = 0.18;
 const MAX_HEIGHT = 11;
 const RISE_DURATION = 0.9;
 
+/** Clamp a value between a lower and upper bound. */
+function clamp(v: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, v));
+}
+
 export interface HoverInfo {
   date: string;
   count: number;
@@ -437,7 +442,7 @@ export class City {
     if (!this.mesh || !this.reflection) return;
     const c = new THREE.Color();
     for (let i = 0; i < this.buildings.length; i++) {
-      c.setHex(this.theme.ramp[Math.max(0, Math.min(4, this.buildings[i].shade))]);
+      c.setHex(this.theme.ramp[clamp(this.buildings[i].shade, 0, 4)]);
       this.mesh.setColorAt(i, c);
       this.reflection.setColorAt(i, c);
     }
@@ -451,7 +456,7 @@ export class City {
     const m = new THREE.Matrix4();
     for (let i = 0; i < this.buildings.length; i++) {
       const b = this.buildings[i];
-      const local = Math.min(1, Math.max(0, (t - b.delay) / RISE_DURATION));
+      const local = clamp((t - b.delay) / RISE_DURATION, 0, 1);
       const eased = local === 0 ? 0 : 1 - Math.pow(2, -9 * local); // easeOutExpo
       const h = Math.max(0.001, b.height * eased);
       m.makeScale(1, h, 1);
