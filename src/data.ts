@@ -23,6 +23,12 @@ export interface Stats {
 const API = 'https://github-contributions-api.jogruber.de/v4';
 
 export const USERNAME_RE = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/;
+export const YEAR_RE = /^\d{4}$/;
+
+/** Whether a range string is a four digit calendar year. */
+export function isYearRange(range: string): boolean {
+  return YEAR_RE.test(range);
+}
 
 export class ContributionError extends Error {
   constructor(message: string, readonly kind: 'notfound' | 'network' | 'empty') {

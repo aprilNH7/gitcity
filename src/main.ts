@@ -5,6 +5,7 @@ import {
   computeStats,
   demoContributions,
   ContributionError,
+  isYearRange,
   type Contributions,
   type Day,
 } from './data';
@@ -536,7 +537,7 @@ setAccent(theme);
 const startUser = params.get('user');
 const startRange = params.get('range') ?? 'last';
 buildRangeOptions(startRange);
-if (/^\d{4}$/.test(startRange)) {
+if (isYearRange(startRange)) {
   ensureRangeOption(startRange);
   rangeSel.value = startRange;
 }
@@ -544,7 +545,7 @@ if (/^\d{4}$/.test(startRange)) {
 const usersParam = params.get('users');
 const seedUsers = Leaderboard.restore(usersParam);
 const startPeriod = params.get('period');
-if (startPeriod && (startPeriod === 'all' || startPeriod === 'last' || /^\d{4}$/.test(startPeriod))) {
+if (startPeriod && (startPeriod === 'all' || startPeriod === 'last' || isYearRange(startPeriod))) {
   board.setPeriod(startPeriod);
 }
 
