@@ -115,6 +115,7 @@ function ensureRangeOption(range: string) {
 
 const TOAST_MS = 2200;
 const TOAST_FADE_MS = 250;
+const HINT_TIMEOUT_MS = 9000;
 
 let toastTimer: number | undefined;
 function toast(text: string) {
@@ -534,7 +535,7 @@ city.onHover((info) => {
 });
 
 canvas.addEventListener('pointerdown', () => hint.classList.add('gone'), { once: true });
-setTimeout(() => hint.classList.add('gone'), 9000);
+setTimeout(() => hint.classList.add('gone'), HINT_TIMEOUT_MS);
 
 // ------------------------------------------------------------------ boot
 
