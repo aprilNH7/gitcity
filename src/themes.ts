@@ -41,7 +41,7 @@ export const THEMES: Theme[] = [
     fog: 0x040a08,
     ground: 0x06110d,
     grid: 0x14301f,
-    ramp: [0x111f18, 0x0d5c33, 0x14A34A, 0x3ce77a, 0xb9ffcf],
+    ramp: [0x111f18, 0x0d5c33, 0x14a34a, 0x3ce77a, 0xb9ffcf],
     bloom: 0.9,
     glow: 1.2,
     accent: '#39e77c',
