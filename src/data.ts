@@ -23,6 +23,8 @@ export interface Stats {
 const API = 'https://github-contributions-api.jogruber.de/v4';
 
 export const USERNAME_RE = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/;
+// GitHub usernames are alphanumeric, may contain hyphens only between
+// alphanumeric characters, and are limited to 39 characters total.
 export const YEAR_RE = /^\d{4}$/;
 
 /** Whether a range string is a four digit calendar year. */
