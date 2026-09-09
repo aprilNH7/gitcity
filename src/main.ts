@@ -116,6 +116,10 @@ function ensureRangeOption(range: string) {
 const TOAST_MS = 2200;
 const TOAST_FADE_MS = 250;
 const HINT_TIMEOUT_MS = 9000;
+const TOOLTIP_OFFSET_PX = 14;
+const TOOLTIP_EDGE_PAD_PX = 10;
+const TOOLTIP_MIN_W_PX = 160;
+const TOOLTIP_MIN_H_PX = 44;
 
 let toastTimer: number | undefined;
 function toast(text: string) {
@@ -528,10 +532,10 @@ city.onHover((info) => {
   tooltip.innerHTML = `<b>${info.count} contribution${info.count === 1 ? '' : 's'}</b><span>${label}</span>${who}`;
   tooltip.hidden = false;
   // Keep the card inside the viewport near the right and bottom edges.
-  const w = tooltip.offsetWidth || 160;
-  const h = tooltip.offsetHeight || 44;
-  tooltip.style.left = `${Math.min(info.x + 14, window.innerWidth - w - 10)}px`;
-  tooltip.style.top = `${Math.min(info.y + 14, window.innerHeight - h - 10)}px`;
+  const w = tooltip.offsetWidth || TOOLTIP_MIN_W_PX;
+  const h = tooltip.offsetHeight || TOOLTIP_MIN_H_PX;
+  tooltip.style.left = `${Math.min(info.x + TOOLTIP_OFFSET_PX, window.innerWidth - w - TOOLTIP_EDGE_PAD_PX)}px`;
+  tooltip.style.top = `${Math.min(info.y + TOOLTIP_OFFSET_PX, window.innerHeight - h - TOOLTIP_EDGE_PAD_PX)}px`;
 });
 
 canvas.addEventListener('pointerdown', () => hint.classList.add('gone'), { once: true });
