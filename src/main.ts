@@ -162,6 +162,11 @@ function addOption(select: HTMLSelectElement, value: string, label: string) {
   select.appendChild(o);
 }
 
+/** Split a comma separated URL parameter into trimmed, non-empty tokens. */
+function splitParam(value: string | null): string[] {
+  return (value ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+}
+
 function renderStats(c: Contributions) {
   const s = computeStats(c.days);
   $<HTMLElement>('s-total').textContent = fmt.format(s.total);
@@ -550,7 +555,7 @@ if (startPeriod && (startPeriod === 'all' || startPeriod === 'last' || isYearRan
 
 // A head to head link opens straight into the comparison and skips the single
 // city load entirely, otherwise the two would race for the scene.
-const vsParam = (params.get('vs') ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+const vsParam = splitParam(params.get('vs'));
 
 if (vsParam.length === 2) {
   vsA.value = vsParam[0];
