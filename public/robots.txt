@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://aprilnh7.github.io/gitcity/sitemap.xml
