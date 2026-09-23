@@ -137,6 +137,19 @@ export const THEMES: Theme[] = [
     accent: '#33ccff',
     starColor: 0x66ddff,
   },
+  {
+    id: 'forest',
+    label: 'Forest',
+    bg: 0x051005,
+    fog: 0x051005,
+    ground: 0x0f240f,
+    grid: 0x1a401a,
+    ramp: [0x142b14, 0x2e5c2e, 0x4caf50, 0x81c784, 0xc8e6c9],
+    bloom: 0.8,
+    glow: 1.1,
+    accent: '#81c784',
+    starColor: 0xa5d6a7,
+  },
 
 ];
 
