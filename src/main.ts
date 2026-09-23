@@ -571,6 +571,8 @@ setTimeout(() => hint.classList.add('gone'), HINT_TIMEOUT_MS);
 buildThemeButtons();
 setAccent(theme);
 
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
 const startUser = params.get('user');
 const startRange = params.get('range') ?? 'last';
 buildRangeOptions(startRange);
