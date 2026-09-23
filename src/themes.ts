@@ -111,6 +111,19 @@ export const THEMES: Theme[] = [
     accent: '#ffcc33',
     starColor: 0xffea00,
   },
+  {
+    id: 'coral',
+    label: 'Coral',
+    bg: 0x120505,
+    fog: 0x120505,
+    ground: 0x241414,
+    grid: 0x4a2a2a,
+    ramp: [0x3a1a1a, 0x8a4a4a, 0xe07a7a, 0xff9999, 0xffcccc],
+    bloom: 0.8,
+    glow: 1.1,
+    accent: '#ff9999',
+    starColor: 0xffaaaa,
+  },
 
 ];
 
