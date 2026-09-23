@@ -124,6 +124,19 @@ export const THEMES: Theme[] = [
     accent: '#ff9999',
     starColor: 0xffaaaa,
   },
+  {
+    id: 'ocean',
+    label: 'Ocean',
+    bg: 0x000a14,
+    fog: 0x000a14,
+    ground: 0x001428,
+    grid: 0x00334d,
+    ramp: [0x001f3f, 0x005073, 0x0099cc, 0x33ccff, 0xaaddff],
+    bloom: 0.85,
+    glow: 1.15,
+    accent: '#33ccff',
+    starColor: 0x66ddff,
+  },
 
 ];
 
