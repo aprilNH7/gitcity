@@ -150,6 +150,19 @@ export const THEMES: Theme[] = [
     accent: '#81c784',
     starColor: 0xa5d6a7,
   },
+  {
+    id: 'berry',
+    label: 'Berry',
+    bg: 0x120212,
+    fog: 0x120212,
+    ground: 0x240a24,
+    grid: 0x4a1f4a,
+    ramp: [0x3a0f3a, 0x7a2a7a, 0xc050c0, 0xff80ff, 0xffccff],
+    bloom: 0.85,
+    glow: 1.2,
+    accent: '#ff80ff',
+    starColor: 0xff99ff,
+  },
 
 ];
 
