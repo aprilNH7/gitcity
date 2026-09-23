@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { City } from './city';
 import { THEMES, themeById, type Theme } from './themes';
 import {
@@ -573,6 +574,12 @@ buildThemeButtons();
 setAccent(theme);
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+if (prefersReducedMotion.matches) {
+  document.documentElement.dataset.reducedMotion = 'true';
+}
+prefersReducedMotion.addEventListener('change', (e) => {
+  document.documentElement.dataset.reducedMotion = e.matches ? 'true' : '';
+});
 
 const buildTimeEl = document.getElementById('build-time');
 if (buildTimeEl) buildTimeEl.textContent = new Date(BUILD_TIME).toLocaleDateString();
