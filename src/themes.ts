@@ -86,6 +86,19 @@ export const THEMES: Theme[] = [
     accent: '#7fb8f0',
     starColor: 0xcfe6ff,
   },
+  {
+    id: 'silver',
+    label: 'Silver',
+    bg: 0x0a0a0a,
+    fog: 0x0a0a0a,
+    ground: 0x111111,
+    grid: 0x2a2a2a,
+    ramp: [0x1a1a1a, 0x4a4a4a, 0x808080, 0xb0b0b0, 0xe0e0e0],
+    bloom: 0.75,
+    glow: 1.0,
+    accent: '#c0c0c0',
+    starColor: 0xc0c0c0,
+  },
 ];
 
 /**

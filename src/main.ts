@@ -38,6 +38,13 @@ const vsBody = $<HTMLTableSectionElement>('vs-body');
 const vsNote = $<HTMLParagraphElement>('vs-note');
 const tagsEl = $<HTMLDivElement>('tags');
 const tagEls = [$<HTMLSpanElement>('tag-0'), $<HTMLSpanElement>('tag-1')];
+const randomBtn = $<HTMLButtonElement>('random');
+
+const RANDOM_USERS = [
+  'torvalds', 'sindresorhus', 'gaearon', 'yyx990803', 'kentcdodds',
+  'tj', 'anthropics', 'vercel', 'openai', 'midudev',
+  'kamranahmedse', 'freeCodeCamp', 'EbookFoundation', 'microsoft', 'google',
+];
 
 const params = new URLSearchParams(location.search);
 let theme: Theme = themeById(params.get('theme'));
@@ -198,6 +205,7 @@ async function load(user: string, range: string) {
   if (pair) exitVersus();
   loading = true;
   goBtn.disabled = true;
+  randomBtn.disabled = true;
   message(`Building ${user}'s city…`, 'info');
 
   try {
@@ -216,6 +224,7 @@ async function load(user: string, range: string) {
   } finally {
     loading = false;
     goBtn.disabled = false;
+    randomBtn.disabled = false;
   }
 }
 
@@ -484,6 +493,13 @@ $<HTMLButtonElement>('a-share').addEventListener('click', async () => {
 });
 
 $<HTMLButtonElement>('a-reset').addEventListener('click', () => city.resetView());
+
+randomBtn.addEventListener('click', () => {
+  if (loading) return;
+  const user = RANDOM_USERS[Math.floor(Math.random() * RANDOM_USERS.length)];
+  userInput.value = user;
+  load(user, rangeSel.value);
+});
 
 let boardSeeded = false;
 function showBoard(show: boolean) {

@@ -164,6 +164,22 @@ html, body {
 .go:active { transform: scale(.94); }
 .go[disabled] { opacity: .5; cursor: progress; }
 
+.random {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform .15s, background .15s, border-color .15s;
+}
+.random:hover { background: rgba(255, 255, 255, 0.14); border-color: var(--accent); }
+.random:active { transform: scale(.94); }
+.random[disabled] { opacity: .5; cursor: progress; }
+
 select {
   width: 100%;
   height: 34px;
