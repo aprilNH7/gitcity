@@ -44,6 +44,8 @@ const RANDOM_USERS = [
   'torvalds', 'sindresorhus', 'gaearon', 'yyx990803', 'kentcdodds',
   'tj', 'anthropics', 'vercel', 'openai', 'midudev',
   'kamranahmedse', 'freeCodeCamp', 'EbookFoundation', 'microsoft', 'google',
+  'facebook', 'apple', 'netflix', 'spotify', 'docker',
+  'git', 'nodejs', 'rust-lang', 'golang', 'python',
 ];
 
 const params = new URLSearchParams(location.search);
