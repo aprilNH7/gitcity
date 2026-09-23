@@ -209,7 +209,7 @@ async function load(user: string, range: string) {
   loading = true;
   goBtn.disabled = true;
   randomBtn.disabled = true;
-  message(`Building ${user}'s city…`, 'info');
+  message(`Fetching ${user}'s contributions and building the city…`, 'info');
 
   try {
     const data = await fetchContributions(user, range);
