@@ -337,6 +337,7 @@ select option { background: #0b1119; color: var(--ink); }
 /* ------------------------------------------------------------------ overlays */
 
 .tooltip {
+  transition: opacity 0.12s ease;
   position: fixed;
   z-index: 5;
   padding: 7px 10px;
