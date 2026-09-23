@@ -163,6 +163,19 @@ export const THEMES: Theme[] = [
     accent: '#ff80ff',
     starColor: 0xff99ff,
   },
+  {
+    id: 'midnight',
+    label: 'Midnight',
+    bg: 0x02020a,
+    fog: 0x02020a,
+    ground: 0x0a0a1f,
+    grid: 0x1a1a3a,
+    ramp: [0x0f0f2e, 0x2a2a5a, 0x5c5cff, 0x9999ff, 0xccccff],
+    bloom: 0.9,
+    glow: 1.2,
+    accent: '#9999ff',
+    starColor: 0xaaaaff,
+  },
 
 ];
 
