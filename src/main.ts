@@ -217,7 +217,7 @@ async function load(user: string, range: string) {
     city.build(data.days);
     renderStats(data);
     board.setActive(data.user);
-    document.title = `${data.user} · gitcity`;
+    document.title = `${data.user}'s gitcity · 3D contribution graph`;
     message(null);
     syncURL();
   } catch (err) {
