@@ -237,6 +237,7 @@ select option { background: #0b1119; color: var(--ink); }
 /* ------------------------------------------------------------------ stats */
 
 .stats {
+  transition: opacity 0.25s ease, transform 0.25s ease;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
@@ -718,7 +719,8 @@ select option { background: #0b1119; color: var(--ink); }
     gap: 9px;
   }
 
-  .stats { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .stats {
+  transition: opacity 0.25s ease, transform 0.25s ease; grid-template-columns: repeat(4, 1fr); gap: 6px; }
   .stats dd { font-size: 13px; }
   .stats dt { font-size: 9px; }
 
