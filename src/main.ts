@@ -574,6 +574,9 @@ setAccent(theme);
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+const buildTimeEl = document.getElementById('build-time');
+if (buildTimeEl) buildTimeEl.textContent = new Date(BUILD_TIME).toLocaleDateString();
+
 const startUser = params.get('user');
 const startRange = params.get('range') ?? 'last';
 buildRangeOptions(startRange);
