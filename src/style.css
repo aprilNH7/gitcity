@@ -353,6 +353,8 @@ select option { background: #0b1119; color: var(--ink); }
 .tooltip .who { font-family: var(--mono); color: color-mix(in srgb, var(--accent) 78%, var(--ink)); }
 
 .toast {
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
   position: fixed;
   left: 50%;
   bottom: 84px;
@@ -748,7 +750,9 @@ select option { background: #0b1119; color: var(--ink); }
   .actions button { flex: 1; padding: 10px 4px; text-align: center; }
 
   .hint { display: none; }
-  .toast { bottom: auto; top: 76px; }
+  .toast {
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4); bottom: auto; top: 76px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
