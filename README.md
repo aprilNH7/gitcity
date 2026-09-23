@@ -55,6 +55,16 @@ On a phone the pair is turned a quarter so the year runs down the long axis and 
 | --- | --- |
 | ![Matrix theme](docs/shot-matrix.png) | ![Ice theme](docs/shot-ice.png) |
 
+## Keyboard shortcuts
+
+While the search box is not focused:
+
+- `R` — load a random profile
+- `0` — reset the camera
+- `P` — download PNG
+- `L` — download STL
+- `S` — copy share link
+
 ## How it works
 
 The whole city is a single `InstancedMesh`, one instance per day, so a full year is one draw call.
