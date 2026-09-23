@@ -98,7 +98,20 @@ export const THEMES: Theme[] = [
     glow: 1.0,
     accent: '#c0c0c0',
     starColor: 0xc0c0c0,
+  },  {
+    id: 'solar',
+    label: 'Solar',
+    bg: 0x0a0a00,
+    fog: 0x0a0a00,
+    ground: 0x1a1a08,
+    grid: 0x4a4a12,
+    ramp: [0x3a3a0a, 0x8a8a1a, 0xd4a017, 0xffcc33, 0xffffaa],
+    bloom: 0.9,
+    glow: 1.2,
+    accent: '#ffcc33',
+    starColor: 0xffea00,
   },
+
 ];
 
 /**
