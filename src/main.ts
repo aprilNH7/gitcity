@@ -222,7 +222,7 @@ async function load(user: string, range: string) {
     syncURL();
   } catch (err) {
     const known = err instanceof ContributionError;
-    message(known ? err.message : 'Something went wrong loading that profile.');
+    message(known ? err.message : 'Something went wrong loading that profile. Try again in a few seconds.');
     if (!current) loadDemo();
   } finally {
     loading = false;
