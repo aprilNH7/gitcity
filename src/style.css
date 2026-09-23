@@ -1,3 +1,6 @@
+.skip-link { position: absolute; left: -9999px; top: 8px; z-index: 100; padding: 8px 14px; background: var(--accent); color: #000; border-radius: 6px; font-weight: 600; }
+.skip-link:focus { left: 8px; }
+
 :root {
   --accent: #2ee6d6;
   --ink: #eaf3f6;
