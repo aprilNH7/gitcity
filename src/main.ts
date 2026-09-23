@@ -36,6 +36,7 @@ const vsGo = $<HTMLButtonElement>('vs-go');
 const vsTable = $<HTMLTableElement>('vs-table');
 const vsBody = $<HTMLTableSectionElement>('vs-body');
 const vsNote = $<HTMLParagraphElement>('vs-note');
+const BUILD_TIME = import.meta.env.VITE_BUILD_TIME || new Date().toISOString();
 const tagsEl = $<HTMLDivElement>('tags');
 const tagEls = [$<HTMLSpanElement>('tag-0'), $<HTMLSpanElement>('tag-1')];
 const randomBtn = $<HTMLButtonElement>('random');
