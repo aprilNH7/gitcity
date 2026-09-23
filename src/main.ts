@@ -606,3 +606,18 @@ if (vsParam.length === 2) {
 
 // A shared link that carries a board should land with the board already open.
 if (usersParam && vsParam.length !== 2) showBoard(true);
+
+// Keyboard shortcuts (skip when typing in an input).
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    toastEl.classList.remove('show');
+    return;
+  }
+  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+  const key = e.key.toLowerCase();
+  if (key === 'r') randomBtn.click();
+  if (key === '0') city.resetView();
+  if (key === 'p') $<HTMLButtonElement>('a-png').click();
+  if (key === 'l') $<HTMLButtonElement>('a-stl').click();
+  if (key === 's') $<HTMLButtonElement>('a-share').click();
+});
