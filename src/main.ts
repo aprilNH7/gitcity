@@ -498,6 +498,11 @@ $<HTMLButtonElement>('a-share').addEventListener('click', async () => {
 
 $<HTMLButtonElement>('a-reset').addEventListener('click', () => city.resetView());
 
+$<HTMLButtonElement>('a-ortho').addEventListener('click', () => {
+  const on = city.toggleOrtho();
+  toast(on ? 'Orthographic camera' : 'Perspective camera');
+});
+
 randomBtn.addEventListener('click', () => {
   if (loading) return;
   const user = RANDOM_USERS[Math.floor(Math.random() * RANDOM_USERS.length)];

@@ -67,6 +67,8 @@ interface Building {
 export class City {
   readonly scene = new THREE.Scene();
   readonly camera: THREE.PerspectiveCamera;
+  private orthoCamera: THREE.OrthographicCamera;
+  private ortho = false;
   readonly renderer: THREE.WebGLRenderer;
 
   private controls: OrbitControls;
@@ -103,6 +105,8 @@ export class City {
 
   private disposed = false;
 
+  private renderPass: RenderPass;
+
   constructor(private canvas: HTMLCanvasElement, theme: Theme) {
     this.theme = theme;
 
@@ -120,6 +124,10 @@ export class City {
     this.camera = new THREE.PerspectiveCamera(46, 1, 0.1, 400);
     this.camera.position.set(-26, 22, 34);
 
+    const frustum = 60;
+    this.orthoCamera = new THREE.OrthographicCamera(-frustum, frustum, frustum, -frustum, 0.1, 400);
+    this.orthoCamera.position.copy(this.camera.position);
+
     this.controls = new OrbitControls(this.camera, canvas);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.06;
@@ -132,7 +140,8 @@ export class City {
     this.controls.target.set(0, 1.5, 0);
 
     this.composer = new EffectComposer(this.renderer);
-    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.renderPass = new RenderPass(this.scene, this.camera);
+    this.composer.addPass(this.renderPass);
     this.bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), theme.bloom, 0.5, 0.42);
     this.composer.addPass(this.bloom);
     this.composer.addPass(new OutputPass());
@@ -323,6 +332,11 @@ export class City {
     return this.turned;
   }
 
+  /** Camera currently driving the scene and raycaster. */
+  private get activeCamera() {
+    return this.ortho ? this.orthoCamera : this.camera;
+  }
+
   private get depth() {
     const n = Math.max(1, this.zones.length);
     return n * ROWS + (n - 1) * GAP;
@@ -481,17 +495,30 @@ export class City {
     const target = new THREE.Vector3(0, topH * (many ? 0.3 : 0.42), 0);
     this.controls.target.copy(target);
 
-    // Two districts are read straight on, so they stack as two clean bands
-    // instead of shearing into each other. One city gets the livelier angle.
     const dir = this.turned
       ? new THREE.Vector3(0.06, 0.66, 0.75).normalize()
       : many
         ? new THREE.Vector3(-0.08, 0.6, 0.79).normalize()
         : new THREE.Vector3(-0.3, 0.42, 0.86).normalize();
 
-    // Exact fit: project every corner of the city's bounding box into camera
-    // space and take the distance that keeps all eight inside the frustum.
-    // The approximate version cropped the ends at wide aspect ratios.
+    if (this.ortho) {
+      // Orthographic framing: fit the bounding box with even padding.
+      const aspect = this.camera.aspect;
+      const hView = Math.max(halfW * 2.2, topH * 1.2);
+      const wView = Math.max(halfD * 2.2, hView * aspect);
+      const halfH = Math.max(wView / aspect, hView) / 2;
+      const halfWFrustum = (wView / 2) * 1.1;
+      this.orthoCamera.left = -halfWFrustum;
+      this.orthoCamera.right = halfWFrustum;
+      this.orthoCamera.top = halfH * 1.1;
+      this.orthoCamera.bottom = -halfH * 1.1;
+      this.orthoCamera.position.copy(target).addScaledVector(dir, 80);
+      this.orthoCamera.lookAt(target);
+      this.orthoCamera.updateProjectionMatrix();
+      this.controls.update();
+      return;
+    }
+
     const vFov = (this.camera.fov * Math.PI) / 180;
     const tanV = Math.tan(vFov / 2);
     const tanH = tanV * this.camera.aspect;
@@ -524,6 +551,14 @@ export class City {
     this.frameCamera();
   }
 
+  toggleOrtho() {
+    this.ortho = !this.ortho;
+    this.controls.object = this.activeCamera;
+    this.renderPass.camera = this.activeCamera;
+    this.frameCamera();
+    return this.ortho;
+  }
+
   // ---------------------------------------------------------------- loop
 
   private onPointerMove = (e: PointerEvent) => {
@@ -545,7 +580,7 @@ export class City {
     if (!this.mesh || !this.hoverHandler) return;
     if (this.pointer.x < -1 || this.pointer.x > 1) return;
 
-    this.raycaster.setFromCamera(this.pointer, this.camera);
+    this.raycaster.setFromCamera(this.pointer, this.activeCamera);
     const hit = this.raycaster.intersectObject(this.mesh, false)[0];
     const id = hit && hit.instanceId !== undefined ? hit.instanceId : HOVER_NONE;
     if (id === this.lastHover) return;
@@ -585,7 +620,7 @@ export class City {
         // above, the near one lands in the gap and reads as neither city's.
         v.set(-1.2 * CELL, Math.max(2.4, meta.top * 0.5), this.zoneZ(zone) + ((ROWS - 1) / 2) * CELL);
         this.group.localToWorld(v);
-        v.project(this.camera);
+        v.project(this.activeCamera);
 
         return {
           label: district.label,
@@ -638,6 +673,11 @@ export class City {
     const h = window.innerHeight;
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
+    const orthoH = (this.orthoCamera.top - this.orthoCamera.bottom) / 2;
+    const orthoW = orthoH * (w / h);
+    this.orthoCamera.left = -orthoW;
+    this.orthoCamera.right = orthoW;
+    this.orthoCamera.updateProjectionMatrix();
     this.renderer.setSize(w, h, false);
     this.composer.setSize(w, h);
     this.bloom.resolution.set(w, h);
