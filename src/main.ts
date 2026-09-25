@@ -18,6 +18,7 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 const canvas = $<HTMLCanvasElement>('scene');
 const form = $<HTMLFormElement>('form');
 const userInput = $<HTMLInputElement>('user');
+const recentEl = $<HTMLUListElement>('recent');
 const goBtn = $<HTMLButtonElement>('go');
 const rangeSel = $<HTMLSelectElement>('range');
 const themeBox = $<HTMLDivElement>('themes');
@@ -155,6 +156,63 @@ const RANGE_YEAR_COUNT = 9;
 const VS_WAIT_MS = 20_000;
 const VS_POLL_MS = 60;
 const THEME_STORE_KEY = 'gitcity.theme';
+const RECENT_STORE_KEY = 'gitcity.recent';
+const MAX_RECENT = 8;
+
+function loadRecent(): string[] {
+  try {
+    const raw = localStorage.getItem(RECENT_STORE_KEY);
+    if (raw) {
+      const list = JSON.parse(raw);
+      if (Array.isArray(list)) return list.filter((s: unknown) => typeof s === 'string' && s).slice(0, MAX_RECENT);
+    }
+  } catch {
+    // Ignore corrupt storage.
+  }
+  return [];
+}
+
+function saveRecent(user: string) {
+  if (!user || user.toLowerCase() === 'demo') return;
+  try {
+    const list = loadRecent().filter((u) => u.toLowerCase() !== user.toLowerCase());
+    list.unshift(user);
+    localStorage.setItem(RECENT_STORE_KEY, JSON.stringify(list.slice(0, MAX_RECENT)));
+  } catch {
+    // Storage unavailable.
+  }
+}
+
+function renderRecent() {
+  const list = loadRecent();
+  recentEl.innerHTML = '';
+  if (!list.length) {
+    recentEl.hidden = true;
+    return;
+  }
+  for (const user of list) {
+    const li = document.createElement('li');
+    li.textContent = user;
+    li.addEventListener('click', () => {
+      userInput.value = user;
+      recentEl.hidden = true;
+      load(user, rangeSel.value);
+    });
+    recentEl.appendChild(li);
+  }
+}
+
+function showRecent(show: boolean) {
+  if (show && loadRecent().length) recentEl.hidden = false;
+  else recentEl.hidden = true;
+}
+
+userInput.addEventListener('focus', () => showRecent(true));
+userInput.addEventListener('blur', () => {
+  // Delay so a click on a recent item registers first.
+  setTimeout(() => (recentEl.hidden = true), 150);
+});
+recentEl.addEventListener('mousedown', (e) => e.preventDefault());
 
 let toastTimer: number | undefined;
 function toast(text: string) {
@@ -250,6 +308,8 @@ async function load(user: string, range: string) {
     current = data;
     city.build(data.days);
     renderStats(data);
+    saveRecent(data.user);
+    renderRecent();
     board.setActive(data.user);
     document.title = `${data.user}'s gitcity · 3D contribution graph`;
     message(null);
@@ -670,6 +730,8 @@ prefersReducedMotion.addEventListener('change', (e) => {
 
 const buildTimeEl = document.getElementById('build-time');
 if (buildTimeEl) buildTimeEl.textContent = new Date(BUILD_TIME).toLocaleDateString();
+
+renderRecent();
 
 const startUser = params.get('user');
 const startRange = params.get('range') ?? 'last';

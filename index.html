@@ -67,16 +67,19 @@
     <main class="panel" id="panel">
       <form class="row search" id="form">
         <label class="sr-only" for="user">GitHub username</label>
-        <input
-          id="user"
-          name="user"
-          type="text"
-          placeholder="github username"
-          autocomplete="off"
-          autocapitalize="none"
-          spellcheck="false"
-          autocorrect="off"
-        />
+        <div class="input-wrap">
+          <input
+            id="user"
+            name="user"
+            type="text"
+            placeholder="github username"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+            autocorrect="off"
+          />
+          <ul class="recent" id="recent" hidden></ul>
+        </div>
         <button class="go" type="submit" id="go" aria-label="Build city">
           <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
             <path d="M5 12h13M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>

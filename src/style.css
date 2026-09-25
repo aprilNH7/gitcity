@@ -129,8 +129,15 @@ html, body {
 
 .row { display: flex; gap: 8px; }
 
-.search input {
+.input-wrap {
+  position: relative;
   flex: 1;
+  min-width: 0;
+}
+
+.search input {
+  width: 100%;
+  flex: none;
   min-width: 0;
   height: 38px;
   padding: 0 12px;
@@ -205,6 +212,36 @@ select {
   background-repeat: no-repeat;
 }
 select option { background: #0b1119; color: var(--ink); }
+
+.recent[hidden] { display: none; }
+.recent {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 5px;
+  list-style: none;
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(8, 12, 18, 0.95);
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+.recent li {
+  padding: 7px 10px;
+  font-size: 13px;
+  border-radius: 7px;
+  cursor: pointer;
+  color: var(--ink);
+}
+.recent li:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent);
+}
 
 /* ------------------------------------------------------------------ themes */
 
