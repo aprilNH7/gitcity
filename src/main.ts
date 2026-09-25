@@ -51,7 +51,23 @@ const RANDOM_USERS = [
 ];
 
 const params = new URLSearchParams(location.search);
-let theme: Theme = themeById(params.get('theme'));
+function storeTheme(id: string) {
+  try {
+    localStorage.setItem(THEME_STORE_KEY, id);
+  } catch {
+    // Storage may be unavailable in private browsing.
+  }
+}
+
+function loadStoredTheme(): string | null {
+  try {
+    return localStorage.getItem(THEME_STORE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+let theme: Theme = themeById(params.get('theme') ?? loadStoredTheme());
 let current: Contributions | null = null;
 /** The pair on screen in versus mode, or null in single city mode. */
 let pair: [Contributions, Contributions] | null = null;
@@ -96,6 +112,7 @@ function buildThemeButtons() {
       theme = t;
       city.applyTheme(t);
       setAccent(t);
+      storeTheme(t.id);
       for (const el of themeBox.querySelectorAll('button')) {
         el.setAttribute('aria-pressed', String(el.dataset.id === t.id));
       }
@@ -134,6 +151,7 @@ const TOOLTIP_MIN_H_PX = 44;
 const RANGE_YEAR_COUNT = 9;
 const VS_WAIT_MS = 20_000;
 const VS_POLL_MS = 60;
+const THEME_STORE_KEY = 'gitcity.theme';
 
 let toastTimer: number | undefined;
 function toast(text: string) {
