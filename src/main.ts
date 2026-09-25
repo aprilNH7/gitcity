@@ -27,6 +27,8 @@ const msgEl = $<HTMLParagraphElement>('msg');
 const tooltip = $<HTMLDivElement>('tooltip');
 const toastEl = $<HTMLDivElement>('toast');
 const hint = $<HTMLDivElement>('hint');
+const helpEl = $<HTMLDivElement>('help');
+const helpCloseBtn = $<HTMLButtonElement>('help-close');
 const boardEl = $<HTMLElement>('board');
 const boardBtn = $<HTMLButtonElement>('a-board');
 const versusEl = $<HTMLElement>('versus');
@@ -638,6 +640,18 @@ city.onHover((info) => {
   tooltip.style.top = `${Math.min(info.y + TOOLTIP_OFFSET_PX, window.innerHeight - h - TOOLTIP_EDGE_PAD_PX)}px`;
 });
 
+function toggleHelp(show?: boolean) {
+  const next = show ?? helpEl.hidden;
+  helpEl.hidden = !next;
+}
+
+helpCloseBtn.addEventListener('click', () => toggleHelp(false));
+helpEl.addEventListener('click', (e) => {
+  if (e.target === helpEl || (e.target as HTMLElement).classList.contains('help-backdrop')) {
+    toggleHelp(false);
+  }
+});
+
 canvas.addEventListener('pointerdown', () => hint.classList.add('gone'), { once: true });
 setTimeout(() => hint.classList.add('gone'), HINT_TIMEOUT_MS);
 
@@ -696,14 +710,23 @@ if (usersParam && vsParam.length !== 2) showBoard(true);
 // Keyboard shortcuts (skip when typing in an input).
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
+    if (!helpEl.hidden) {
+      toggleHelp(false);
+      return;
+    }
     toastEl.classList.remove('show');
     return;
   }
   if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
   const key = e.key.toLowerCase();
+  if (key === '?') {
+    toggleHelp();
+    return;
+  }
   if (key === 'r') randomBtn.click();
   if (key === '0') city.resetView();
   if (key === 'p') $<HTMLButtonElement>('a-png').click();
   if (key === 'l') $<HTMLButtonElement>('a-stl').click();
+  if (key === 'g') $<HTMLButtonElement>('a-gltf').click();
   if (key === 's') $<HTMLButtonElement>('a-share').click();
 });

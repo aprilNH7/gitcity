@@ -158,6 +158,24 @@
 
     <div class="hint" id="hint">drag to orbit · scroll to zoom · hover a day</div>
 
+    <div class="help" id="help" hidden aria-label="Keyboard shortcuts">
+      <div class="help-backdrop"></div>
+      <div class="help-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+        <h2 id="help-title">Keyboard shortcuts</h2>
+        <ul>
+          <li><kbd>?</kbd> <span>show / hide this help</span></li>
+          <li><kbd>R</kbd> <span>load a random profile</span></li>
+          <li><kbd>0</kbd> <span>reset the camera</span></li>
+          <li><kbd>P</kbd> <span>download PNG</span></li>
+          <li><kbd>L</kbd> <span>download STL</span></li>
+          <li><kbd>G</kbd> <span>download glTF</span></li>
+          <li><kbd>S</kbd> <span>copy share link</span></li>
+          <li><kbd>Esc</kbd> <span>close panels and this help</span></li>
+        </ul>
+        <button id="help-close" type="button" class="help-close" aria-label="Close help">Close</button>
+      </div>
+    </div>
+
     <div class="tooltip" id="tooltip" hidden></div>
     <div class="toast" id="toast" hidden></div>
 
