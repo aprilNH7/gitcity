@@ -532,6 +532,11 @@ $<HTMLButtonElement>('a-ortho').addEventListener('click', () => {
   toast(on ? 'Orthographic camera' : 'Perspective camera');
 });
 
+$<HTMLButtonElement>('a-rotate').addEventListener('click', () => {
+  const on = city.toggleAutoRotate();
+  toast(on ? 'Auto-rotate on' : 'Auto-rotate off');
+});
+
 randomBtn.addEventListener('click', () => {
   if (loading) return;
   const user = RANDOM_USERS[Math.floor(Math.random() * RANDOM_USERS.length)];

@@ -560,6 +560,11 @@ export class City {
     return this.ortho;
   }
 
+  toggleAutoRotate(): boolean {
+    this.controls.autoRotate = !this.controls.autoRotate;
+    return this.controls.autoRotate;
+  }
+
   // ---------------------------------------------------------------- loop
 
   private onPointerMove = (e: PointerEvent) => {
