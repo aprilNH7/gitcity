@@ -486,6 +486,17 @@ $<HTMLButtonElement>('a-stl').addEventListener('click', () => {
   }, 60);
 });
 
+$<HTMLButtonElement>('a-gltf').addEventListener('click', async () => {
+  toast('Building glTF…');
+  try {
+    const blob = await city.exportGLTF();
+    download(blob, `${exportName()}.glb`);
+    toast('glTF exported');
+  } catch {
+    toast('Could not export glTF');
+  }
+});
+
 $<HTMLButtonElement>('a-share').addEventListener('click', async () => {
   syncURL();
   try {

@@ -5,6 +5,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Day } from './data';
 import type { Theme } from './themes';
@@ -717,6 +718,63 @@ export class City {
     for (const p of parts) p.dispose();
     merged.dispose();
     return new Blob([data], { type: 'model/stl' });
+  }
+
+  /** Export the city as a binary glTF for web viewers and 3D tools. */
+  exportGLTF(): Promise<Blob> {
+    const w = this.cols * CELL;
+    const d = this.depth * CELL;
+
+    const root = new THREE.Group();
+
+    const plate = new THREE.Mesh(
+      new THREE.BoxGeometry(w + 2, 0.6, d + 2).translate(0, -0.3, 0),
+      new THREE.MeshStandardMaterial({ color: this.theme.ground, roughness: 0.5, metalness: 0.1 })
+    );
+    root.add(plate);
+
+    const byColor = new Map<number, THREE.BufferGeometry[]>();
+    for (const b of this.buildings) {
+      if (b.day.count === 0) continue;
+      const g = new THREE.BoxGeometry(FOOTPRINT, b.height, FOOTPRINT);
+      g.translate(
+        b.col * CELL - w / 2 + CELL / 2,
+        b.height / 2,
+        this.zoneZ(b.zone) + b.row * CELL - d / 2 + CELL / 2
+      );
+      const color = this.theme.ramp[clamp(b.shade, 0, 4)];
+      const list = byColor.get(color) ?? [];
+      list.push(g);
+      byColor.set(color, list);
+    }
+
+    for (const [color, geos] of byColor) {
+      if (!geos.length) continue;
+      const merged = BufferGeometryUtils.mergeGeometries(geos, false);
+      const mesh = new THREE.Mesh(
+        merged,
+        new THREE.MeshStandardMaterial({ color, roughness: 0.34, metalness: 0.16 })
+      );
+      root.add(mesh);
+    }
+
+    return new Promise((resolve, reject) => {
+      new GLTFExporter().parse(
+        root,
+        (gltf) => {
+          root.traverse((obj) => {
+            const m = obj as THREE.Mesh;
+            m.geometry?.dispose();
+            const mat = m.material;
+            if (Array.isArray(mat)) mat.forEach((mm) => mm.dispose());
+            else mat?.dispose();
+          });
+          resolve(new Blob([gltf as ArrayBuffer], { type: 'model/gltf-binary' }));
+        },
+        (err) => reject(err instanceof Error ? err : new Error(String(err))),
+        { binary: true }
+      );
+    });
   }
 
   // ---------------------------------------------------------------- teardown
