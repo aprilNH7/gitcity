@@ -23,6 +23,15 @@ GitHub's own Skyline was the fun way to look back at a year of work, and it is g
 - **Export an STL** and print your year. Buildings sit on a base plate, ready to slice.
 - **Shareable links.** `?user=torvalds&range=2024&theme=sunset` restores the exact view, `?users=a,b,c&period=all` restores a board, and `?vs=a,b` restores a head-to-head.
 
+## Features
+
+- **Seven themes** — Neon, Aurora, Sunset, Matrix, Ice, Magma, and Cyberpunk, with theme choice persisted locally.
+- **Two camera modes** — orbit with a perspective lens or switch to an orthographic projection for a clean, technical view.
+- **Auto-rotate and full-screen toggles** for hands-free presentations.
+- **Exports** — PNG (opaque or transparent), printable STL, binary glTF, and CSV for head-to-head comparisons.
+- **Stats and sharing** — copy stats to the clipboard, copy a deep link, and view keyboard shortcuts with `?`.
+- **Recent searches** — quickly reload previously viewed profiles from a dropdown.
+
 ## Leaderboard
 
 Put a group side by side and rank them by contribution volume, across all time, the rolling last twelve months, or any single year. Click a row to build that person's city.
