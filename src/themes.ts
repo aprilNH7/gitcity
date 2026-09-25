@@ -189,6 +189,19 @@ export const THEMES: Theme[] = [
     accent: '#ff6b2d',
     starColor: 0xffa87a,
   },
+  {
+    id: 'cyberpunk',
+    label: 'Cyberpunk',
+    bg: 0x0a0014,
+    fog: 0x0a0014,
+    ground: 0x140024,
+    grid: 0x2d004d,
+    ramp: [0x1a0030, 0x4a007a, 0x8a00ff, 0xff00cc, 0x00f0ff],
+    bloom: 1.15,
+    glow: 1.35,
+    accent: '#00f0ff',
+    starColor: 0xff00cc,
+  },
 
 ];
 
