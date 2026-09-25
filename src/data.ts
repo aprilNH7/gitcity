@@ -18,6 +18,7 @@ export interface Stats {
   activeDays: number;
   longestStreak: number;
   currentStreak: number;
+  avgPerActiveDay: number;
 }
 
 const API = 'https://github-contributions-api.jogruber.de/v4';
@@ -209,7 +210,14 @@ export function computeStats(days: Day[]): Stats {
     }
   }
 
-  return { total, best, activeDays, longestStreak: longest, currentStreak: current };
+  return {
+    total,
+    best,
+    activeDays,
+    longestStreak: longest,
+    currentStreak: current,
+    avgPerActiveDay: activeDays ? total / activeDays : 0,
+  };
 }
 
 const DEMO_DAYS = 365;

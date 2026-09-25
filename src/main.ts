@@ -277,7 +277,7 @@ function renderStats(c: Contributions) {
   $<HTMLElement>('s-total').textContent = fmt.format(s.total);
   $<HTMLElement>('s-best').textContent = s.best ? `${s.best.count} · ${s.best.date.slice(5)}` : '—';
   $<HTMLElement>('s-streak').textContent = `${s.longestStreak}d`;
-  $<HTMLElement>('s-active').textContent = `${s.activeDays}`;
+  $<HTMLElement>('s-avg').textContent = s.activeDays ? s.avgPerActiveDay.toFixed(1) : '—';
   statsBox.hidden = false;
   copyStatsBtn.hidden = false;
 }
@@ -289,7 +289,7 @@ function statsText(c: Contributions): string {
     `Contributions: ${fmt.format(s.total)}`,
     `Best day: ${s.best ? `${s.best.count} on ${s.best.date}` : '—'}`,
     `Longest streak: ${s.longestStreak}d`,
-    `Active days: ${s.activeDays}`,
+    `Avg / active day: ${s.activeDays ? s.avgPerActiveDay.toFixed(1) : '—'}`,
   ].join('\n');
 }
 
