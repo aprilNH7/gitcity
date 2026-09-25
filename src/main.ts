@@ -41,6 +41,7 @@ const vsGo = $<HTMLButtonElement>('vs-go');
 const vsTable = $<HTMLTableElement>('vs-table');
 const vsBody = $<HTMLTableSectionElement>('vs-body');
 const vsNote = $<HTMLParagraphElement>('vs-note');
+const vsExportBtn = $<HTMLButtonElement>('vs-export');
 const BUILD_TIME = import.meta.env.VITE_BUILD_TIME || new Date().toISOString();
 const tagsEl = $<HTMLDivElement>('tags');
 const tagEls = [$<HTMLSpanElement>('tag-0'), $<HTMLSpanElement>('tag-1')];
@@ -458,11 +459,35 @@ function renderVersus(A: Contributions, B: Contributions) {
   }
 
   vsTable.hidden = false;
+  vsExportBtn.hidden = false;
   // Turned side by side there are no floating captions, so the mapping from
   // table column to skyline has to be said out loud.
   setVsNote(city.sideBySide
     ? `${rangeLabel(A.range)}. ${A.user} left, ${B.user} right, one shared scale.`
     : `${rangeLabel(A.range)}. Both cities share one height and colour scale.`);
+}
+
+function escapeCSV(value: string | number): string {
+  const str = String(value);
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+function exportVersusCSV(A: Contributions, B: Contributions): Blob {
+  const sa = computeStats(A.days);
+  const sb = computeStats(B.days);
+  const lines: (string | number)[][] = [
+    ['Metric', A.user, B.user],
+    ['Contributions', sa.total, sb.total],
+    ['Best day', sa.best?.count ?? 0, sb.best?.count ?? 0],
+    ['Longest streak', `${sa.longestStreak}d`, `${sb.longestStreak}d`],
+    ['Active days', sa.activeDays, sb.activeDays],
+    ['Busiest week', busiestWeek(A.days), busiestWeek(B.days)],
+  ];
+  const csv = lines.map((row) => row.map(escapeCSV).join(',')).join('\n');
+  return new Blob([csv], { type: 'text/csv' });
 }
 
 /** Best rolling 7 day total, a fairer read on peak output than a single day. */
@@ -538,6 +563,7 @@ function exitVersus() {
   showTags(false);
   versusEl.hidden = true;
   versusBtn.setAttribute('aria-pressed', 'false');
+  vsExportBtn.hidden = true;
   return back;
 }
 
@@ -676,6 +702,13 @@ rangeSel.addEventListener('change', () => {
 
 versusBtn.addEventListener('click', () => showVersus(versusEl.hidden));
 $<HTMLButtonElement>('vs-close').addEventListener('click', () => showVersus(false));
+vsExportBtn.addEventListener('click', () => {
+  if (!pair) return;
+  const blob = exportVersusCSV(pair[0], pair[1]);
+  download(blob, `gitcity-${pair[0].user}-vs-${pair[1].user}-${pair[0].range}.csv`);
+  toast('CSV exported');
+});
+
 vsForm.addEventListener('submit', (e) => {
   e.preventDefault();
   loadVersus(vsA.value, vsB.value, rangeSel.value);

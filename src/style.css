@@ -829,6 +829,26 @@ select option { background: #0b1119; color: var(--ink); }
 }
 .help-close:hover { filter: brightness(1.12); }
 
+.vs-export[hidden] { display: none; }
+.vs-export {
+  margin-top: 4px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--stroke);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.vs-export:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* ------------------------------------------------------------------ mobile */
 
 @media (max-width: 760px) {
