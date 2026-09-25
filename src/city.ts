@@ -114,6 +114,7 @@ export class City {
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
+      alpha: true,
       // Needed so "Save PNG" can read the framebuffer after a frame is drawn.
       preserveDrawingBuffer: true,
       powerPreference: 'high-performance',
@@ -691,9 +692,19 @@ export class City {
 
   // ---------------------------------------------------------------- export
 
-  snapshotPNG(): string {
+  snapshotPNG(transparent = false): string {
+    const savedBg = this.scene.background;
+    if (transparent) {
+      this.scene.background = null;
+      this.renderer.setClearAlpha(0);
+    }
     this.composer.render();
-    return this.renderer.domElement.toDataURL('image/png');
+    const url = this.renderer.domElement.toDataURL('image/png');
+    if (transparent) {
+      this.scene.background = savedBg;
+      this.renderer.setClearAlpha(1);
+    }
+    return url;
   }
 
   /** Solid, watertight-enough boxes on a base plate, ready to slice. */

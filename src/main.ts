@@ -583,14 +583,23 @@ const exportName = () =>
     ? `gitcity-${pair[0].user}-vs-${pair[1].user}-${pair[0].range}`
     : `gitcity-${current?.user ?? 'demo'}-${current?.range ?? ''}`;
 
-$<HTMLButtonElement>('a-png').addEventListener('click', () => {
-  const name = `${exportName()}.png`;
-  const url = city.snapshotPNG();
+function downloadPNG(transparent = false) {
+  const name = `${exportName()}${transparent ? '-transparent' : ''}.png`;
+  const url = city.snapshotPNG(transparent);
   const a = document.createElement('a');
   a.href = url;
   a.download = name;
   a.click();
+}
+
+$<HTMLButtonElement>('a-png').addEventListener('click', () => {
+  downloadPNG();
   toast('PNG saved');
+});
+
+$<HTMLButtonElement>('a-png-transparent').addEventListener('click', () => {
+  downloadPNG(true);
+  toast('Transparent PNG saved');
 });
 
 $<HTMLButtonElement>('a-stl').addEventListener('click', () => {
