@@ -525,6 +525,14 @@ $<HTMLButtonElement>('a-share').addEventListener('click', async () => {
   }
 });
 
+$<HTMLButtonElement>('a-fullscreen').addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => toast('Full screen not allowed'));
+  } else {
+    document.exitFullscreen();
+  }
+});
+
 $<HTMLButtonElement>('a-reset').addEventListener('click', () => city.resetView());
 
 $<HTMLButtonElement>('a-ortho').addEventListener('click', () => {
