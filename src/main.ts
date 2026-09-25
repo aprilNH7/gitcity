@@ -22,6 +22,7 @@ const goBtn = $<HTMLButtonElement>('go');
 const rangeSel = $<HTMLSelectElement>('range');
 const themeBox = $<HTMLDivElement>('themes');
 const statsBox = $<HTMLDListElement>('stats');
+const copyStatsBtn = $<HTMLButtonElement>('a-copy-stats');
 const msgEl = $<HTMLParagraphElement>('msg');
 const tooltip = $<HTMLDivElement>('tooltip');
 const toastEl = $<HTMLDivElement>('toast');
@@ -217,6 +218,18 @@ function renderStats(c: Contributions) {
   $<HTMLElement>('s-streak').textContent = `${s.longestStreak}d`;
   $<HTMLElement>('s-active').textContent = `${s.activeDays}`;
   statsBox.hidden = false;
+  copyStatsBtn.hidden = false;
+}
+
+function statsText(c: Contributions): string {
+  const s = computeStats(c.days);
+  return [
+    `${c.user} — ${c.range}`,
+    `Contributions: ${fmt.format(s.total)}`,
+    `Best day: ${s.best ? `${s.best.count} on ${s.best.date}` : '—'}`,
+    `Longest streak: ${s.longestStreak}d`,
+    `Active days: ${s.activeDays}`,
+  ].join('\n');
 }
 
 // ------------------------------------------------------------------ loading
@@ -331,6 +344,7 @@ async function loadVersus(a: string, b: string, range: string) {
   vsB.value = B.user;
   userInput.value = A.user;
   statsBox.hidden = true;
+  copyStatsBtn.hidden = true;
   message(null);
   renderVersus(A, B);
   showTags(!city.sideBySide);
@@ -545,8 +559,20 @@ $<HTMLButtonElement>('a-rotate').addEventListener('click', () => {
   toast(on ? 'Auto-rotate on' : 'Auto-rotate off');
 });
 
+copyStatsBtn.addEventListener('click', async () => {
+  if (!current || current.user === 'demo') {
+    toast('No stats to copy');
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(statsText(current));
+    toast('Stats copied');
+  } catch {
+    toast('Could not copy stats');
+  }
+});
+
 randomBtn.addEventListener('click', () => {
-  if (loading) return;
   const user = RANDOM_USERS[Math.floor(Math.random() * RANDOM_USERS.length)];
   userInput.value = user;
   load(user, rangeSel.value);
