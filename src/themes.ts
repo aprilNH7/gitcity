@@ -176,6 +176,19 @@ export const THEMES: Theme[] = [
     accent: '#9999ff',
     starColor: 0xaaaaff,
   },
+  {
+    id: 'magma',
+    label: 'Magma',
+    bg: 0x110500,
+    fog: 0x110500,
+    ground: 0x240a04,
+    grid: 0x4a1a0d,
+    ramp: [0x2a0d08, 0x6b1a0a, 0xb83a1a, 0xff6b2d, 0xffd6a8],
+    bloom: 1.0,
+    glow: 1.25,
+    accent: '#ff6b2d',
+    starColor: 0xffa87a,
+  },
 
 ];
 
