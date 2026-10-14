@@ -37,7 +37,7 @@ await page.waitForTimeout(4000);
 // Data landed and matches what the profile graph shows.
 const total = await page.textContent('#s-total');
 check('contributions render', total === '2,892', `got ${total}`);
-check('stats panel visible', await page.isVisible('#s-active'));
+check('stats panel visible', await page.isVisible('#stats'));
 
 // Hover raycast against the InstancedMesh yields a per-day tooltip.
 const box = await page.locator('#scene').boundingBox();
@@ -73,6 +73,20 @@ if (stl) {
 await page.click('#a-png');
 await page.waitForTimeout(900);
 check('PNG export', (await page.textContent('#toast'))?.includes('PNG') ?? false);
+
+// The time-lapse replays the period in calendar order and settles back.
+await page.click('#a-play');
+check(
+  'replay starts',
+  (await page.getAttribute('#a-play', 'aria-pressed')) === 'true',
+  (await page.textContent('#toast')) ?? '',
+);
+await page.waitForFunction(
+  () => document.querySelector('#a-play')?.getAttribute('aria-pressed') === 'false',
+  null,
+  { timeout: 20000 },
+);
+check('replay finishes on its own', true);
 
 // ------------------------------------------------------------------ board
 
@@ -142,6 +156,22 @@ await page.click('#board .brow:has-text("kentcdodds") .rm');
 await page.waitForTimeout(500);
 const shrunk = await readRows();
 check('remove user', !shrunk.some((r) => r.user.toLowerCase() === 'kentcdodds'), `${shrunk.length} rows`);
+
+// The board's ranking exports as CSV, mirroring the versus export.
+const [boardCsv] = await Promise.all([
+  page.waitForEvent('download', { timeout: 15000 }).catch(() => null),
+  page.click('#board .board-export'),
+]);
+if (boardCsv) {
+  const { size } = await stat(await boardCsv.path());
+  check(
+    'board CSV export',
+    /gitcity-board-/.test(boardCsv.suggestedFilename()) && size > 60,
+    `${boardCsv.suggestedFilename()} · ${size} bytes`,
+  );
+} else {
+  check('board CSV export', false, 'no download fired');
+}
 
 await page.click('#a-board');
 check('board closes', !(await page.isVisible('#board')));
@@ -213,6 +243,15 @@ await page.click('#go');
 await page.waitForTimeout(3000);
 const msg = (await page.textContent('#msg')) ?? '';
 check('unknown user handled', /not found/i.test(msg), msg.trim().slice(0, 56));
+
+// Escape closes panels, and "/" jumps to the search box from anywhere.
+await page.click('#a-board');
+check('escape closes board', await page.isVisible('#board'));
+await page.keyboard.press('Escape');
+await page.waitForTimeout(300);
+check('escape closed board', !(await page.isVisible('#board')));
+await page.keyboard.press('/');
+check('slash focuses search', (await page.evaluate(() => document.activeElement?.id)) === 'user');
 
 // Phone viewport keeps the controls reachable.
 await page.setViewportSize({ width: 390, height: 844 });

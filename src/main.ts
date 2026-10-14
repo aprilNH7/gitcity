@@ -656,6 +656,24 @@ $<HTMLButtonElement>('a-rotate').addEventListener('click', () => {
   toast(on ? 'Auto-rotate on' : 'Auto-rotate off');
 });
 
+const playBtn = $<HTMLButtonElement>('a-play');
+playBtn.addEventListener('click', () => {
+  if (city.isPlaying) {
+    city.stopPlayback();
+    playBtn.setAttribute('aria-pressed', 'false');
+    toast('Time-lapse stopped');
+    return;
+  }
+  if (city.startPlayback()) {
+    playBtn.setAttribute('aria-pressed', 'true');
+    toast('Replaying the period as it happened…');
+  } else {
+    toast('Load a city first');
+  }
+});
+// Covers the run finishing on its own and being replaced by a rebuild.
+city.onPlaybackEnd(() => playBtn.setAttribute('aria-pressed', 'false'));
+
 copyStatsBtn.addEventListener('click', async () => {
   if (!current || current.user === 'demo') {
     toast('No stats to copy');
@@ -689,6 +707,21 @@ function showBoard(show: boolean) {
 }
 
 boardBtn.addEventListener('click', () => showBoard(!board.visible));
+
+board.exportButton.addEventListener('click', () => {
+  const rows = board.snapshot();
+  if (!rows.length) {
+    toast('Nothing to export yet');
+    return;
+  }
+  const lines: (string | number)[][] = [
+    ['Rank', 'User', 'Contributions', 'Longest streak', 'Best day'],
+    ...rows.map((r) => [r.rank, r.user, r.value, `${r.streak}d`, r.best]),
+  ];
+  const csv = lines.map((row) => row.map(escapeCSV).join(',')).join('\n');
+  download(new Blob([csv], { type: 'text/csv' }), `gitcity-board-${board.period}.csv`);
+  toast('Board CSV exported');
+});
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -818,6 +851,14 @@ document.addEventListener('keydown', (e) => {
       toggleHelp(false);
       return;
     }
+    if (board.visible) {
+      showBoard(false);
+      return;
+    }
+    if (!versusEl.hidden) {
+      showVersus(false);
+      return;
+    }
     toastEl.classList.remove('show');
     return;
   }
@@ -827,7 +868,14 @@ document.addEventListener('keydown', (e) => {
     toggleHelp();
     return;
   }
+  if (key === '/') {
+    e.preventDefault();
+    userInput.focus();
+    userInput.select();
+    return;
+  }
   if (key === 'r') randomBtn.click();
+  if (key === 't') playBtn.click();
   if (key === '0') city.resetView();
   if (key === 'p') $<HTMLButtonElement>('a-png').click();
   if (key === 'l') $<HTMLButtonElement>('a-stl').click();

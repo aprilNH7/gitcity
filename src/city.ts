@@ -20,6 +20,8 @@ const MIN_HEIGHT = 0.18;
 const MAX_HEIGHT = 11;
 const RISE_DURATION = 0.9;
 const RISE_PAD = 0.2;
+/** How long a full time-lapse run takes to sweep the loaded period. */
+const PLAYBACK_SECONDS = 8;
 const HOVER_NONE = -1;
 
 /** Clamp a value between a lower and upper bound. */
@@ -59,6 +61,8 @@ interface Building {
   shade: number;
   delay: number;
   day: Day;
+  /** Cached Date.parse of day.date so the time-lapse never parses strings per frame. */
+  time: number;
 }
 
 /**
@@ -95,6 +99,11 @@ export class City {
   private turned = false;
   private riseTime = 0;
   private rising = false;
+  private playing = false;
+  private playStartWall = 0;
+  private playFrom = 0;
+  private playTo = 0;
+  private playbackEndHandler: (() => void) | null = null;
   private theme: Theme;
 
   private raycaster = new THREE.Raycaster();
@@ -165,6 +174,40 @@ export class City {
   /** Fired every frame while two districts are on screen, never for one. */
   onLabels(handler: (items: LabelPos[]) => void) {
     this.labelHandler = handler;
+  }
+
+  /** Fired once when a time-lapse finishes, is stopped, or is replaced by a rebuild. */
+  onPlaybackEnd(handler: () => void) {
+    this.playbackEndHandler = handler;
+  }
+
+  get isPlaying() {
+    return this.playing;
+  }
+
+  /**
+   * Sweeps a calendar cutoff across the loaded period so buildings appear in
+   * the order their days happened, like a construction time-lapse.
+   */
+  startPlayback(): boolean {
+    if (!this.buildings.length || this.playing) return false;
+    this.playFrom = Infinity;
+    this.playTo = -Infinity;
+    for (const b of this.buildings) {
+      if (b.time < this.playFrom) this.playFrom = b.time;
+      if (b.time > this.playTo) this.playTo = b.time;
+    }
+    this.rising = false;
+    this.playing = true;
+    this.playStartWall = performance.now();
+    return true;
+  }
+
+  stopPlayback() {
+    if (!this.playing) return;
+    this.playing = false;
+    this.writeMatrices(1);
+    this.playbackEndHandler?.();
   }
 
   // ---------------------------------------------------------------- scene
@@ -384,6 +427,7 @@ export class City {
             : day.level,
           delay: Math.floor(idx / ROWS) * 0.016 + (idx % ROWS) * 0.012 + zone * 0.1,
           day,
+          time: Date.parse(day.date),
         });
       }
     });
@@ -451,6 +495,13 @@ export class City {
     this.motes = this.makeMotes(this.theme);
     this.scene.add(this.motes);
 
+    // A rebuild replaces whatever was on screen, so a running time-lapse
+    // ends rather than fighting the new rise animation.
+    if (this.playing) {
+      this.playing = false;
+      this.playbackEndHandler?.();
+    }
+
     this.riseTime = 0;
     this.rising = true;
     this.frameCamera();
@@ -468,15 +519,20 @@ export class City {
     if (this.reflection.instanceColor) this.reflection.instanceColor.needsUpdate = true;
   }
 
-  /** t is 0..1 across the rise animation. */
-  private writeMatrices(t: number) {
+  /**
+   * t is 0..1 across the rise animation. During a time-lapse, cutoffMs hides
+   * every day that has not happened yet so the city grows in calendar order.
+   */
+  private writeMatrices(t: number, cutoffMs?: number) {
     if (!this.mesh || !this.reflection) return;
     const m = new THREE.Matrix4();
     for (let i = 0; i < this.buildings.length; i++) {
       const b = this.buildings[i];
       const local = clamp((t - b.delay) / RISE_DURATION, 0, 1);
       const eased = local === 0 ? 0 : 1 - Math.pow(2, -9 * local); // easeOutExpo
-      const h = Math.max(0.001, b.height * eased);
+      const h = cutoffMs !== undefined && b.time > cutoffMs
+        ? 0.001
+        : Math.max(0.001, b.height * eased);
       m.makeScale(1, h, 1);
       m.setPosition(b.col * CELL, 0, this.zoneZ(b.zone) + b.row * CELL);
       this.mesh.setMatrixAt(i, m);
@@ -658,7 +714,18 @@ export class City {
       const dt = Math.min(this.clock.getDelta(), 0.05);
       this.uniforms.uTime.value += dt;
 
-      if (this.rising) {
+      if (this.playing) {
+        // Time-lapse: sweep a calendar cutoff across the period so buildings
+        // appear in the order their days happened.
+        const t = (performance.now() - this.playStartWall) / 1000 / PLAYBACK_SECONDS;
+        if (t >= 1) {
+          this.playing = false;
+          this.writeMatrices(1);
+          this.playbackEndHandler?.();
+        } else {
+          this.writeMatrices(1, this.playFrom + t * (this.playTo - this.playFrom));
+        }
+      } else if (this.rising) {
         this.riseTime += dt;
         this.writeMatrices(this.riseTime);
         const last = this.buildings[this.buildings.length - 1];

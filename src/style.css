@@ -474,6 +474,27 @@ select option { background: #0b1119; color: var(--ink); }
   background-position: calc(100% - 14px) 12px, calc(100% - 9px) 12px;
 }
 
+.board-export[hidden] { display: none; }
+.board-export {
+  height: 28px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.board-export:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: rgba(255, 255, 255, 0.1);
+}
+
 .board-add { display: flex; gap: 6px; }
 .board-add input {
   flex: 1;
@@ -915,5 +936,7 @@ select option { background: #0b1119; color: var(--ink); }
 .site-footer a:hover { text-decoration: underline; }
 
 @media (max-width: 520px) {
-  .site-footer { bottom: 6px; font-size: 11px; gap: 10px; }
+  /* The action bar owns the bottom edge on phones, so the footer sits above it
+     instead of covering the buttons. */
+  .site-footer { bottom: 72px; font-size: 11px; gap: 10px; }
 }

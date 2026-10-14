@@ -21,6 +21,7 @@ GitHub's own Skyline was the fun way to look back at a year of work, and it is g
 - **Five themes.** Neon, Aurora, Sunset, Matrix, Ice.
 - **Save a PNG** of the current camera angle.
 - **Export an STL** and print your year. Buildings sit on a base plate, ready to slice.
+- **Time-lapse replay.** Play the period back in calendar order and watch the city grow day by day, or skip it with a click.
 - **Shareable links.** `?user=torvalds&range=2024&theme=sunset` restores the exact view, `?users=a,b,c&period=all` restores a board, and `?vs=a,b` restores a head-to-head.
 
 ## Features
@@ -28,9 +29,10 @@ GitHub's own Skyline was the fun way to look back at a year of work, and it is g
 - **Seven themes** — Neon, Aurora, Sunset, Matrix, Ice, Magma, and Cyberpunk, with theme choice persisted locally.
 - **Two camera modes** — orbit with a perspective lens or switch to an orthographic projection for a clean, technical view.
 - **Auto-rotate and full-screen toggles** for hands-free presentations.
-- **Exports** — PNG (opaque or transparent), printable STL, binary glTF, and CSV for head-to-head comparisons.
+- **Exports** — PNG (opaque or transparent), printable STL, binary glTF, and CSV for the leaderboard and head-to-head comparisons.
 - **Stats and sharing** — copy stats to the clipboard, copy a deep link, and view keyboard shortcuts with `?`.
 - **Recent searches** — quickly reload previously viewed profiles from a dropdown.
+- **Keyboard navigation** — `/` jumps to the search box and `Esc` closes any open panel, alongside the rest of the shortcuts below.
 
 ## Leaderboard
 
@@ -68,11 +70,15 @@ On a phone the pair is turned a quarter so the year runs down the long axis and 
 
 While the search box is not focused:
 
+- `/` — jump to the search box
 - `R` — load a random profile
+- `T` — replay the period as a time-lapse
 - `0` — reset the camera
 - `P` — download PNG
 - `L` — download STL
 - `S` — copy share link
+- `?` — show or hide the shortcut list
+- `Esc` — close any open panel
 
 ## How it works
 
@@ -105,7 +111,7 @@ npm run smoke             # end-to-end checks against a running dev server
 npm run smoke:resilience  # failure paths, with the API stubbed out
 ```
 
-The smoke test covers data loading, hover raycasting, theme switching, STL and PNG export, the leaderboard, head-to-head comparison, unknown user handling, deep links, and the mobile layout.
+The smoke test covers data loading, hover raycasting, theme switching, STL and PNG export, the time-lapse replay, the leaderboard and its CSV export, head-to-head comparison, keyboard navigation, unknown user handling, deep links, and the mobile layout. A separate resilience suite checks retry and error handling against a failing API.
 
 The resilience test covers what happens when things go wrong: a request that fails once and succeeds on retry, an API that never answers, a username that does not exist, and Compare being clicked while another city is still building.
 

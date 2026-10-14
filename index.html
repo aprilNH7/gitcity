@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="description" content="Turn any GitHub contribution graph into a living 3D neon city. Themes, per-day hover, PNG and STL export." />
+    <meta
+      name="description"
+      content="Turn any GitHub contribution graph into a living 3D neon city. Explore it, theme it, replay it as a time-lapse, save a PNG, or export an STL and print it."
+    />
     <meta name="theme-color" content="#0b0f14" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>gitcity — your GitHub year as a 3D city</title>
@@ -10,24 +13,18 @@
     <meta property="og:url" content="https://aprilnh7.github.io/gitcity/" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="gitcity · 3D GitHub contribution city" />
-    <meta name="twitter:description" content="Turn any GitHub contribution graph into a living 3D neon city." />
     <meta name="twitter:image" content="https://aprilnh7.github.io/gitcity/og.png" />
     <meta property="og:image" content="https://aprilnh7.github.io/gitcity/og.png" />
-    <meta property="og:description" content="Turn any GitHub contribution graph into a living 3D neon city with themes, hover details, PNG and STL export." />
-    <meta property="og:title" content="gitcity · 3D GitHub contribution city" />
     <meta
-      name="description"
-      content="Turn any GitHub contribution graph into a living 3D neon city. Explore it, theme it, save a PNG, or export an STL and print it."
+      property="og:description"
+      content="Turn any GitHub contribution graph into a living 3D neon city. Explore it, theme it, replay it as a time-lapse, save a PNG, or export an STL and print it."
     />
+    <meta property="og:title" content="gitcity · 3D GitHub contribution city" />
     <meta name="theme-color" content="#05060d" />
 
     <link rel="canonical" href="https://aprilnh7.github.io/gitcity/" />
 
     <meta property="og:site_name" content="gitcity" />
-    <meta
-      property="og:description"
-      content="Turn any GitHub contribution graph into a living 3D neon city. Explore it, theme it, save a PNG, or export an STL and print it."
-    />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1600" />
     <meta property="og:image:height" content="900" />
@@ -35,17 +32,15 @@
       property="og:image:alt"
       content="A GitHub contribution year rendered as a glowing 3D skyline, one building per day."
     />
-
     <meta
       name="twitter:description"
-      content="Turn any GitHub contribution graph into a living 3D neon city. Explore it, theme it, save a PNG, or export an STL and print it."
+      content="Turn any GitHub contribution graph into a living 3D neon city. Explore it, theme it, replay it as a time-lapse, save a PNG, or export an STL and print it."
     />
     <meta
       name="twitter:image:alt"
       content="A GitHub contribution year rendered as a glowing 3D skyline, one building per day."
     />
 
-    <link rel="canonical" href="https://aprilnh7.github.io/gitcity/" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23070a12'/%3E%3Crect x='6' y='17' width='4' height='9' fill='%230091a7'/%3E%3Crect x='12' y='10' width='4' height='16' fill='%231fd8c8'/%3E%3Crect x='18' y='14' width='4' height='12' fill='%239dfff0'/%3E%3Crect x='24' y='20' width='3' height='6' fill='%2300506b'/%3E%3C/svg%3E" />
   </head>
   <body>
@@ -150,6 +145,7 @@
     <nav class="actions" aria-label="Export and share">
       <button id="a-ortho" title="Toggle orthographic camera">Ortho</button>
       <button id="a-rotate" title="Toggle auto-rotate">Rotate</button>
+      <button id="a-play" title="Replay the period as a time-lapse (T)" aria-pressed="false">Play</button>
       <button id="a-versus" title="Compare two users side by side" aria-pressed="false">Versus</button>
       <button id="a-board" title="Rank a group of contributors" aria-pressed="false">Board</button>
       <button id="a-png" title="Save a PNG of the current view">PNG</button>
@@ -169,7 +165,9 @@
         <h2 id="help-title">Keyboard shortcuts</h2>
         <ul>
           <li><kbd>?</kbd> <span>show / hide this help</span></li>
+          <li><kbd>/</kbd> <span>jump to the search box</span></li>
           <li><kbd>R</kbd> <span>load a random profile</span></li>
+          <li><kbd>T</kbd> <span>replay the year as a time-lapse</span></li>
           <li><kbd>0</kbd> <span>reset the camera</span></li>
           <li><kbd>P</kbd> <span>download PNG</span></li>
           <li><kbd>L</kbd> <span>download STL</span></li>

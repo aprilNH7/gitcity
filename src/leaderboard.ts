@@ -47,6 +47,7 @@ export class Leaderboard {
   private el: {
     root: HTMLElement;
     period: HTMLSelectElement;
+    export: HTMLButtonElement;
     form: HTMLFormElement;
     input: HTMLInputElement;
     list: HTMLOListElement;
@@ -58,6 +59,7 @@ export class Leaderboard {
       <header class="board-head">
         <h2>Leaderboard</h2>
         <select class="board-period" aria-label="Ranking period"></select>
+        <button class="board-export" type="button" hidden>CSV</button>
       </header>
       <form class="board-add">
         <input type="text" placeholder="add a username" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Add a GitHub username" />
@@ -70,6 +72,7 @@ export class Leaderboard {
     this.el = {
       root,
       period: root.querySelector('.board-period') as HTMLSelectElement,
+      export: root.querySelector('.board-export') as HTMLButtonElement,
       form: root.querySelector('.board-add') as HTMLFormElement,
       input: root.querySelector('.board-add input') as HTMLInputElement,
       list: root.querySelector('.board-list') as HTMLOListElement,
@@ -116,6 +119,27 @@ export class Leaderboard {
 
   get users() {
     return [...this.rows.keys()];
+  }
+
+  /** The header CSV button; main.ts wires it to the download. */
+  get exportButton(): HTMLButtonElement {
+    return this.el.export;
+  }
+
+  /** The current ranking as plain data, so main.ts can export it without reading DOM. */
+  snapshot(): Array<{ rank: number; user: string; value: number; streak: number; best: number }> {
+    return this.rankedRows().map(({ row, value }, i) => {
+      const stats = computeStats(row.days);
+      return { rank: i + 1, user: row.user, value, streak: stats.longestStreak, best: stats.best?.count ?? 0 };
+    });
+  }
+
+  /** Ready rows ranked for the current period; ties break alphabetically. */
+  private rankedRows() {
+    return [...this.rows.values()]
+      .filter((r) => r.state === 'ready')
+      .map((r) => ({ row: r, value: totalForPeriod(r, this.periodValue) }))
+      .sort((a, b) => b.value - a.value || a.row.user.localeCompare(b.row.user));
   }
 
   setPeriod(p: string) {
@@ -254,14 +278,12 @@ export class Leaderboard {
   render() {
     this.syncPeriodOptions();
 
-    const ready = [...this.rows.values()].filter((r) => r.state === 'ready');
-    const ranked = ready
-      .map((r) => ({ row: r, value: totalForPeriod(r, this.periodValue) }))
-      .sort((a, b) => b.value - a.value || a.row.user.localeCompare(b.row.user));
+    const ranked = this.rankedRows();
     const top = ranked[0]?.value ?? 0;
 
     const pending = [...this.rows.values()].filter((r) => r.state !== 'ready');
 
+    this.el.export.hidden = ranked.length === 0;
     this.el.list.innerHTML = '';
     ranked.forEach(({ row, value }, i) => {
       this.el.list.appendChild(this.rowEl(row, i + 1, value, top));

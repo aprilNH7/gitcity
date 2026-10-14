@@ -59,12 +59,14 @@ const browser = await chromium.launch();
 
   await page.goto(`${BASE}/?user=torvalds&range=2024`, { waitUntil: 'domcontentloaded' });
   // #msg is already visible with the loading line, so wait for the attempts to
-  // run out and the text to settle rather than for the element to appear.
+  // run out and the text to settle. The loading line spells "building" in
+  // lowercase, so the check has to be case-insensitive or it resolves at once,
+  // before the first backoff even elapses.
   await page
     .waitForFunction(
       () => {
         const el = document.querySelector('#msg');
-        return el && !el.hasAttribute('hidden') && !/Building/.test(el.textContent ?? '');
+        return el && !el.hasAttribute('hidden') && !/fetching|building/i.test(el.textContent ?? '');
       },
       null,
       { timeout: 30000 },
@@ -92,7 +94,7 @@ const browser = await chromium.launch();
     .waitForFunction(
       () => {
         const el = document.querySelector('#msg');
-        return el && !el.hasAttribute('hidden') && !/Building/.test(el.textContent ?? '');
+        return el && !el.hasAttribute('hidden') && !/fetching|building/i.test(el.textContent ?? '');
       },
       null,
       { timeout: 30000 },
