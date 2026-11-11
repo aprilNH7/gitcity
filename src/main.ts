@@ -11,6 +11,7 @@ import {
   type Day,
 } from './data';
 import { Leaderboard } from './leaderboard';
+import { dailyCSV, renderInsights } from './insights';
 import './style.css';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -46,6 +47,41 @@ const BUILD_TIME = import.meta.env.VITE_BUILD_TIME || new Date().toISOString();
 const tagsEl = $<HTMLDivElement>('tags');
 const tagEls = [$<HTMLSpanElement>('tag-0'), $<HTMLSpanElement>('tag-1')];
 const randomBtn = $<HTMLButtonElement>('random');
+const insightsEl = $<HTMLElement>('insights');
+const insightsBtn = $<HTMLButtonElement>('a-insights');
+const insightsContent = $<HTMLDivElement>('insights-content');
+
+function refreshInsights() {
+  if (current && !insightsEl.hidden) renderInsights(insightsContent, pair ?? [current]);
+}
+
+function showInsights(show: boolean) {
+  if (show && !current) return;
+  if (show) {
+    if (board.visible) showBoard(false);
+    versusEl.hidden = true;
+    versusBtn.setAttribute('aria-pressed', 'false');
+  } else if (pair) {
+    versusEl.hidden = false;
+    versusBtn.setAttribute('aria-pressed', 'true');
+  }
+  insightsEl.hidden = !show;
+  insightsBtn.setAttribute('aria-pressed', String(show));
+  insightsBtn.setAttribute('aria-expanded', String(show));
+  document.body.classList.toggle('insights-open', show);
+  refreshInsights();
+}
+
+insightsBtn.addEventListener('click', () => showInsights(insightsEl.hidden));
+$<HTMLButtonElement>('insights-close').addEventListener('click', () => {
+  showInsights(false);
+  insightsBtn.focus();
+});
+$<HTMLButtonElement>('insights-export').addEventListener('click', () => {
+  if (!current) return;
+  download(dailyCSV(pair ?? [current]), `${exportName()}-daily.csv`);
+  toast('Daily CSV exported');
+});
 
 const RANDOM_USERS = [
   'torvalds', 'sindresorhus', 'gaearon', 'yyx990803', 'kentcdodds',
@@ -280,6 +316,7 @@ function renderStats(c: Contributions) {
   $<HTMLElement>('s-avg').textContent = s.activeDays ? s.avgPerActiveDay.toFixed(1) : '—';
   statsBox.hidden = false;
   copyStatsBtn.hidden = false;
+  refreshInsights();
 }
 
 function statsText(c: Contributions): string {
@@ -410,6 +447,7 @@ async function loadVersus(a: string, b: string, range: string) {
   copyStatsBtn.hidden = true;
   message(null);
   renderVersus(A, B);
+  refreshInsights();
   showTags(!city.sideBySide);
   document.title = `${A.user} vs ${B.user} · gitcity`;
   syncURL();
@@ -547,6 +585,7 @@ function showVersus(show: boolean) {
     return;
   }
 
+  if (!insightsEl.hidden) showInsights(false);
   versusEl.hidden = false;
   versusBtn.setAttribute('aria-pressed', 'true');
   // The two panels live in the same corner, so only one can be open.
@@ -695,6 +734,7 @@ randomBtn.addEventListener('click', () => {
 
 let boardSeeded = false;
 function showBoard(show: boolean) {
+  if (show && !insightsEl.hidden) showInsights(false);
   board.toggle(show);
   boardBtn.setAttribute('aria-pressed', String(show));
   if (show && !versusEl.hidden) showVersus(false);
@@ -851,6 +891,11 @@ document.addEventListener('keydown', (e) => {
       toggleHelp(false);
       return;
     }
+    if (!insightsEl.hidden) {
+      showInsights(false);
+      insightsBtn.focus();
+      return;
+    }
     if (board.visible) {
       showBoard(false);
       return;
@@ -874,6 +919,7 @@ document.addEventListener('keydown', (e) => {
     userInput.select();
     return;
   }
+  if (key === 'i') insightsBtn.click();
   if (key === 'r') randomBtn.click();
   if (key === 't') playBtn.click();
   if (key === '0') city.resetView();

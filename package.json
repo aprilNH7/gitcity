@@ -10,6 +10,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "smoke": "node scripts/smoke.mjs",
+    "smoke:insights": "node scripts/insights.mjs",
     "smoke:resilience": "node scripts/resilience.mjs"
   },
   "dependencies": {

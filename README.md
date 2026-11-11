@@ -31,6 +31,8 @@ GitHub's own Skyline was the fun way to look back at a year of work, and it is g
 - **Auto-rotate and full-screen toggles** for hands-free presentations.
 - **Exports** — PNG (opaque or transparent), printable STL, binary glTF, and CSV for the leaderboard and head-to-head comparisons.
 - **Stats and sharing** — copy stats to the clipboard, copy a deep link, and view keyboard shortcuts with `?`.
+- **Activity insights** — open Insights (or press `I`) for monthly contribution charts, active-day rate, busiest weekday, and best month. Works for a single city or both profiles in a comparison; future dates are excluded and demo data is labeled.
+- **Daily CSV export** — download date-by-date contributions and intensity levels for the current city or both comparison profiles from Insights. Includes profile, range, and data-source columns.
 - **Recent searches** — quickly reload previously viewed profiles from a dropdown.
 - **Keyboard navigation** — `/` jumps to the search box and `Esc` closes any open panel, alongside the rest of the shortcuts below.
 
@@ -108,6 +110,7 @@ Then open http://localhost:5173.
 ```bash
 npm run build             # type check + production bundle
 npm run smoke             # end-to-end checks against a running dev server
+npm run smoke:insights    # deterministic activity insights and CSV checks
 npm run smoke:resilience  # failure paths, with the API stubbed out
 ```
 

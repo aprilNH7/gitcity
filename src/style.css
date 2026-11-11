@@ -333,10 +333,13 @@ select option { background: #0b1119; color: var(--ink); }
 .actions {
   position: fixed;
   right: 24px;
-  bottom: 24px;
+  bottom: 52px;
   z-index: 3;
   display: flex;
   gap: 8px;
+  max-width: calc(100vw - 48px);
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .actions button {
@@ -870,6 +873,20 @@ select option { background: #0b1119; color: var(--ink); }
   background: rgba(255, 255, 255, 0.1);
 }
 
+.insights { width: 360px; }
+.insights-content { overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
+.insight-profile + .insight-profile { border-top: 1px solid var(--stroke); margin-top: 18px; padding-top: 14px; }
+.insight-profile h3 { margin: 0 0 10px; font-size: 14px; overflow-wrap: anywhere; }
+.insight-profile h4 { margin: 16px 0 10px; font-size: 11px; font-weight: 600; color: var(--muted); }
+.insight-profile .stats { padding-bottom: 4px; }
+.insights > .board-head, .insights > .vs-export { flex-shrink: 0; }
+.monthly-chart { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 9px; }
+.monthly-chart li { display: grid; grid-template-columns: 64px minmax(0, 1fr) 48px; gap: 8px; align-items: center; font-size: 11px; }
+.monthly-chart strong { font-family: var(--mono); text-align: right; font-weight: 500; }
+.month-track { height: 7px; border-radius: 4px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.month-track > span { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+.insights button:focus-visible, .actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
 /* ------------------------------------------------------------------ mobile */
 
 @media (max-width: 760px) {
@@ -919,7 +936,11 @@ select option { background: #0b1119; color: var(--ink); }
     bottom: 16px;
     justify-content: space-between;
   }
-  .actions button { flex: 1; padding: 10px 4px; text-align: center; }
+  .actions { max-width: calc(100vw - 24px); justify-content: flex-start; }
+  .actions button { flex: 0 0 auto; padding: 10px 12px; text-align: center; }
+  .insights { bottom: 108px; max-height: calc(100dvh - 166px); }
+  .insights .stats { grid-template-columns: 1fr 1fr; }
+  .insights-open .panel { visibility: hidden; }
 
   .hint { display: none; }
   .toast {

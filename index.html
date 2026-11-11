@@ -107,6 +107,15 @@
       <p class="msg" id="msg" hidden></p>
     </main>
 
+    <aside class="board insights" id="insights" hidden aria-labelledby="insights-title">
+      <div class="board-head">
+        <h2 id="insights-title">Activity insights</h2>
+        <button class="vs-x" id="insights-close" type="button" aria-label="Close activity insights">&times;</button>
+      </div>
+      <div id="insights-content" class="insights-content"></div>
+      <button class="vs-export" id="insights-export" type="button">Export daily CSV</button>
+    </aside>
+
     <aside class="board" id="board" hidden aria-label="Contributor leaderboard"></aside>
 
     <aside class="versus" id="versus" hidden aria-label="Compare two users">
@@ -147,6 +156,7 @@
       <button id="a-rotate" title="Toggle auto-rotate">Rotate</button>
       <button id="a-play" title="Replay the period as a time-lapse (T)" aria-pressed="false">Play</button>
       <button id="a-versus" title="Compare two users side by side" aria-pressed="false">Versus</button>
+      <button id="a-insights" title="Explore monthly activity and export daily data (I)" aria-controls="insights" aria-expanded="false" aria-pressed="false">Insights</button>
       <button id="a-board" title="Rank a group of contributors" aria-pressed="false">Board</button>
       <button id="a-png" title="Save a PNG of the current view">PNG</button>
       <button id="a-png-transparent" title="Save a PNG with transparent background">PNGα</button>
@@ -167,6 +177,7 @@
           <li><kbd>?</kbd> <span>show / hide this help</span></li>
           <li><kbd>/</kbd> <span>jump to the search box</span></li>
           <li><kbd>R</kbd> <span>load a random profile</span></li>
+          <li><kbd>I</kbd> <span>show / hide activity insights</span></li>
           <li><kbd>T</kbd> <span>replay the year as a time-lapse</span></li>
           <li><kbd>0</kbd> <span>reset the camera</span></li>
           <li><kbd>P</kbd> <span>download PNG</span></li>
